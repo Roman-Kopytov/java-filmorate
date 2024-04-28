@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Data
 public class User {
     private int id;
+    @NotBlank
     @Email
     private String email;
     @NotBlank
@@ -19,6 +20,8 @@ public class User {
 
     @AssertTrue
     public boolean isValidBirthday() {
-        return birthday.isBefore(LocalDate.now());
+        if (birthday != null) {
+            return birthday.isBefore(LocalDate.now());
+        } else return true;
     }
 }
