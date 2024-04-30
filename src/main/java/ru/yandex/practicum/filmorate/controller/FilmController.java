@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class FilmController {
 
     private final HashMap<Integer, Film> films = new HashMap<>();
     private Integer actualId = 0;
+    private final static Logger log = LoggerFactory.getLogger(FilmController.class);
 
     @GetMapping
     public ArrayList<Film> getAllFilms() {
@@ -26,25 +28,29 @@ public class FilmController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film createFilm(@Valid @RequestBody Film film) {
+        log.info("==>POST /films {}", film);
         Integer id = getNextId();
         film.setId(id);
         films.put(id, film);
+        log.info("POST /films <== {}", film);
         return film;
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        if (films.get(film.getId()) == null){
-            throw new RuntimeException();
+        log.info("==>PUT /films {}", film);
+        try {
+            if (films.get(film.getId()) == null) {
+                throw new RuntimeException();
+            }
+            films.put(film.getId(), film);
+            log.info("PUT /films <== {}", film);
+        } catch (RuntimeException e) {
+            log.info("Throw RuntimeException", e);
+            throw e;
         }
-        films.put(film.getId(), film);
         return film;
     }
-
-//    @ExceptionHandler(RuntimeException.class)
-//    public ResponseStatusException handleException(RuntimeException e){
-//        return new ResponseStatusException(HttpStatus.BAD_REQUEST);
-//    }
 
     private Integer getNextId() {
         return ++actualId;

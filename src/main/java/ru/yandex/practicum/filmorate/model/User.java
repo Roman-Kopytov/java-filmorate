@@ -24,4 +24,9 @@ public class User {
             return birthday.isBefore(LocalDate.now());
         } else return true;
     }
+
+    @AssertTrue
+    public boolean isValidLogin() {
+        return !login.contains(" ");
+    }
 }

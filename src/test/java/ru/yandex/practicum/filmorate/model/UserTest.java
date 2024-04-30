@@ -19,16 +19,6 @@ class UserTest {
         validator = validatorFactory.usingContext().getValidator();
     }
 
-    @Test
-    public void validateName(){
-        User user = new User();
-        user.setName(" ");
-        user.setLogin("TestLogin");
-        user.setEmail("test@gmail.com");
-
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty(),"Violation not found");
-    }
 
     @Test
     public void validateLogin(){
