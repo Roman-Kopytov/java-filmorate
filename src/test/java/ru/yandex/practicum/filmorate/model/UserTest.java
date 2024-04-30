@@ -9,43 +9,43 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class UserTest {
-    private static Validator validator;
+    private static final Validator validator;
 
     static {
-        ValidatorFactory validatorFactory= Validation.buildDefaultValidatorFactory();
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.usingContext().getValidator();
     }
 
 
     @Test
-    public void validateLogin(){
+    public void validateLogin() {
         User user = new User();
         user.setName("TestName");
         user.setLogin("  ");
         user.setEmail("test@gmail.com");
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
 
         user.setLogin("Test Login");
         violations = validator.validate(user);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
 
     }
 
     @Test
-    public void validateBirthday(){
+    public void validateBirthday() {
         User user = new User();
         user.setName("TestName");
         user.setLogin("TestLogin");
         user.setEmail("test@gmail.com");
-        user.setBirthday(LocalDate.of(2045,10,10));
+        user.setBirthday(LocalDate.of(2045, 10, 10));
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
     }
 
 }

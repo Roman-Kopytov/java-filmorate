@@ -4,36 +4,35 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class FilmTest {
 
-    private static Validator validator;
+    private static final Validator validator;
 
-   static {
-        ValidatorFactory validatorFactory= Validation.buildDefaultValidatorFactory();
+    static {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.usingContext().getValidator();
     }
 
     @Test
-    public void validateName(){
+    public void validateName() {
         Film film = new Film();
         film.setName(" ");
         film.setDescription("Test");
         film.setDuration(1);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
     }
 
     @Test
-    public void validateDescription(){
+    public void validateDescription() {
         Film film = new Film();
         film.setName("TestName");
         film.setDescription("GGnKrlgVWV!y0N8WKYsV\n" +
@@ -51,29 +50,29 @@ public class FilmTest {
 
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
     }
 
     @Test
-    public void validateReleaseDate(){
+    public void validateReleaseDate() {
         Film film = new Film();
         film.setName("TestName");
         film.setDescription("Test");
-        film.setReleaseDate(LocalDate.of(1500,10,10));
+        film.setReleaseDate(LocalDate.of(1500, 10, 10));
         film.setDuration(1);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
     }
 
     @Test
-    public void validateDuration(){
+    public void validateDuration() {
         Film film = new Film();
         film.setName("TestName");
         film.setDescription("Test");
         film.setDuration(-1);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty(),"Violation not found");
+        assertFalse(violations.isEmpty(), "Violation not found");
     }
 }
