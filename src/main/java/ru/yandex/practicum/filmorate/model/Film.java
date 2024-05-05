@@ -31,6 +31,7 @@ public class Film {
     public boolean isReleaseDateValid() {
         if (releaseDate != null) {
             return releaseDate.isAfter(START_FILM_DATA);
-        } else return true;
+        }
+        return true;
     }
 }

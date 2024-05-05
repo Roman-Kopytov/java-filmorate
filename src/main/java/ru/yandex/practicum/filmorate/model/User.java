@@ -22,7 +22,8 @@ public class User {
     public boolean isValidBirthday() {
         if (birthday != null) {
             return birthday.isBefore(LocalDate.now());
-        } else return true;
+        }
+        return true;
     }
 
     @AssertTrue
