@@ -32,10 +32,6 @@ public class InMemoryUserRepository implements UserRepository {
         return user;
     }
 
-    @Override
-    public void delete(User user) {
-
-    }
 
     @Override
     public User update(User user) {
@@ -51,13 +47,10 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public ArrayList<User> getUserFriends(User user) {
+    public List<User> getUserFriends(User user) {
         long userId = user.getId();
         Set<User> friends = userFriends.getOrDefault(userId, Collections.emptySet());
-        if (friends.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(userFriends.get(userId));
+        return new ArrayList<>(friends);
     }
 
     @Override
@@ -73,7 +66,7 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public ArrayList<User> getAll() {
+    public List<User> getAll() {
         return new ArrayList<>(userMap.values());
     }
 }

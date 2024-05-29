@@ -33,7 +33,7 @@ public class InMemoryFilmRepository implements FilmRepository {
     }
 
     @Override
-    public ArrayList<Film> getAll() {
+    public List<Film> getAll() {
         return new ArrayList<>(filmMap.values());
     }
 

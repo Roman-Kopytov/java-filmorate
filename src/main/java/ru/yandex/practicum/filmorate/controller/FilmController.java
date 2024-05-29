@@ -2,29 +2,28 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.Marker.OnUpdate;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 @Validated
 @Slf4j
+@RequiredArgsConstructor
 public class FilmController {
 
-    @Autowired
-    FilmService filmService;
+    private final FilmService filmService;
 
     @GetMapping
-    public ArrayList<Film> getAllFilms() {
+    public List<Film> getAllFilms() {
         return filmService.getAll();
     }
 
@@ -39,7 +38,7 @@ public class FilmController {
     }
 
     @PutMapping
-    @Validated({OnUpdate.class})
+    @Validated({Update.class})
     public Film update(@Valid @RequestBody Film film) {
         log.info("==>PUT /films {}", film);
         Film updatedFilm = filmService.update(film);
@@ -48,7 +47,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
+    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
         log.info("==>GET /popular?count={}", count);
         return filmService.getPopularFilms(count);
     }

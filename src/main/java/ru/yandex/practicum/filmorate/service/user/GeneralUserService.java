@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,10 +55,10 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public ArrayList<User> getCommonFriends(long id, long otherId) {
-        ArrayList<User> userFriends = getFriendsFromRepository(id);
-        ArrayList<User> otherUserFriends = getFriendsFromRepository(otherId);
-        ArrayList<User> commonFriends = new ArrayList<>();
+    public List<User> getCommonFriends(long id, long otherId) {
+        List<User> userFriends = getFriendsFromRepository(id);
+        List<User> otherUserFriends = getFriendsFromRepository(otherId);
+        List<User> commonFriends = new ArrayList<>();
         for (User user : userFriends) {
             if (otherUserFriends.contains(user)) {
                 commonFriends.add(user);
@@ -67,16 +68,16 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public ArrayList<User> getUserFriends(long id) {
+    public List<User> getUserFriends(long id) {
         return getFriendsFromRepository(id);
     }
 
-    private ArrayList<User> getFriendsFromRepository(long id) {
+    private List<User> getFriendsFromRepository(long id) {
         return userRepository.getUserFriends(getUserFromRepository(id));
     }
 
     @Override
-    public ArrayList<User> getAll() {
+    public List<User> getAll() {
         return userRepository.getAll();
     }
 }

@@ -2,27 +2,28 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.Marker;
+import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @Validated
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    UserService userService;
+
+    private final UserService userService;
 
     @GetMapping
-    public ArrayList<User> getAllUsers() {
+    public List<User> getAllUsers() {
         return userService.getAll();
     }
 
@@ -37,7 +38,7 @@ public class UserController {
     }
 
     @PutMapping
-    @Validated({Marker.OnUpdate.class})
+    @Validated({Update.class})
     public User updateUser(@Valid @RequestBody User user) {
         log.info("==>PUT /users  {}", user);
         userService.update(user);
@@ -58,14 +59,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public ArrayList<User> getUserFriends(@PathVariable("id") @Min(0) long id) {
+    public List<User> getUserFriends(@PathVariable("id") @Min(0) long id) {
         log.info("==>GET /users/{}/friends", id);
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public ArrayList<User> getCommonFriends(@PathVariable("id") @Min(0) long id,
-                                            @PathVariable("otherId") @Min(0) long otherId) {
+    public List<User> getCommonFriends(@PathVariable("id") @Min(0) long id,
+                                       @PathVariable("otherId") @Min(0) long otherId) {
         log.info("==>GET /users  {}", id);
         return userService.getCommonFriends(id, otherId);
     }

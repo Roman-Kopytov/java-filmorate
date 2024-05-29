@@ -8,8 +8,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmRepository;
 import ru.yandex.practicum.filmorate.storage.user.UserRepository;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +39,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public ArrayList<Film> getAll() {
+    public List<Film> getAll() {
         return filmRepository.getAll();
     }
 
@@ -64,7 +62,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public Collection<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count) {
         List<Film> sortedFilms = filmRepository.getLikes().entrySet().stream()
                 .sorted((entry1, entry2) -> Integer.compare(entry2.getValue().size(), entry1.getValue().size()))
                 .limit(count)

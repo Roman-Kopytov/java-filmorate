@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service.user;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public interface UserService {
@@ -18,9 +18,9 @@ public interface UserService {
 
     void deleteFriend(long userId, long friendId);
 
-    ArrayList<User> getCommonFriends(long id, long otherId);
+    List<User> getCommonFriends(long id, long otherId);
 
-    ArrayList<User> getUserFriends(long id);
+    List<User> getUserFriends(long id);
 
-    ArrayList<User> getAll();
+    List<User> getAll();
 }
