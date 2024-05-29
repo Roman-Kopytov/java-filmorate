@@ -18,7 +18,7 @@ import java.util.Collection;
 @RequestMapping("/films")
 @Validated
 @Slf4j
-public class FilmController {
+public class  FilmController {
 
     @Autowired
     FilmService filmService;
