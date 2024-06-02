@@ -1,54 +1,67 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Marker.Update;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 @Validated
 @Slf4j
+@RequiredArgsConstructor
 public class FilmController {
 
-    private final HashMap<Integer, Film> films = new HashMap<>();
-    private Integer actualId = 0;
+    private final FilmService filmService;
 
     @GetMapping
-    public ArrayList<Film> getAllFilms() {
-        return new ArrayList<>(films.values());
+    public List<Film> getAllFilms() {
+        return filmService.getAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Film createFilm(@Valid @RequestBody Film film) {
+    @Validated
+    public Film create(@Valid @RequestBody Film film) {
         log.info("==>POST /films {}", film);
-        Integer id = getNextId();
-        film.setId(id);
-        films.put(id, film);
-        log.info("POST /films <== {}", film);
-        return film;
+        Film createdFilm = filmService.create(film);
+        log.info("POST /films <== {}", createdFilm);
+        return createdFilm;
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film film) {
+    @Validated({Update.class})
+    public Film update(@Valid @RequestBody Film film) {
         log.info("==>PUT /films {}", film);
-        if (films.get(film.getId()) == null) {
-            throw new NotFoundException("Film " + film.getId() + " not found");
-        }
-        films.put(film.getId(), film);
-        log.info("PUT /films <== {}", film);
-        return film;
+        Film updatedFilm = filmService.update(film);
+        log.info("PUT /films <== {}", updatedFilm);
+        return updatedFilm;
     }
 
-    private Integer getNextId() {
-        return ++actualId;
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
+        log.info("==>GET /popular?count={}", count);
+        return filmService.getPopularFilms(count);
+    }
+
+    @PutMapping("/{filmId}/like/{userId}")
+    public void addLike(@PathVariable("filmId") @Min(0) long filmId, @PathVariable("userId") @Min(0) long userId) {
+        log.info("==>PUT /films/{}/like/{}", filmId, userId);
+        filmService.addLike(userId, filmId);
+    }
+
+    @DeleteMapping("/{filmId}/like/{userId}")
+    public void deleteLike(@PathVariable("filmId") @Min(0) long filmId, @PathVariable("userId") @Min(0) long userId) {
+        log.info("==>DELETE /films/{}/like/{}", filmId, userId);
+        filmService.deleteLike(userId, filmId);
     }
 
 

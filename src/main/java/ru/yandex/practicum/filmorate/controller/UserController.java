@@ -1,60 +1,74 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @Validated
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
-    private final HashMap<Integer, User> users = new HashMap<>();
 
-    private Integer actualId = 0;
+    private final UserService userService;
 
     @GetMapping
-    public ArrayList<User> getAllFilms() {
-        return new ArrayList<>(users.values());
+    public List<User> getAllUsers() {
+        return userService.getAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Validated
     public User createUser(@Valid @RequestBody User user) {
         log.info("==>POST /users  {}", user);
-        Integer id = getNextId();
-        user.setId(id);
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        users.put(id, user);
+        userService.create(user);
         log.info("POST /users <== {}", user);
         return user;
     }
 
     @PutMapping
+    @Validated({Update.class})
     public User updateUser(@Valid @RequestBody User user) {
         log.info("==>PUT /users  {}", user);
-        if (users.get(user.getId()) == null) {
-            log.info("User {} not found", user);
-            throw new NotFoundException("User" + user.getId() + " not found");
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
+        userService.update(user);
         log.info("PUT /users <== {}", user);
         return user;
     }
 
-    private Integer getNextId() {
-        return ++actualId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable(name = "id") long id, @PathVariable(name = "friendId") long friendId) {
+        log.info("==>PUT /users/{}/friends/{}", id, friendId);
+        userService.addFriend(id, friendId);
     }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable("id") @Min(0) long id, @PathVariable("friendId") @Min(0) long friendId) {
+        log.info("==>DELETE /users/{}/friends/{}", id, friendId);
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getUserFriends(@PathVariable("id") @Min(0) long id) {
+        log.info("==>GET /users/{}/friends", id);
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable("id") @Min(0) long id,
+                                       @PathVariable("otherId") @Min(0) long otherId) {
+        log.info("==>GET /users  {}", id);
+        return userService.getCommonFriends(id, otherId);
+    }
+
 }

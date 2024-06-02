@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.exception;
 
 public class NotFoundException extends RuntimeException {
-    private String massage;
+    private String message;
 
-    public NotFoundException(String massage) {
-        super(massage);
+    public NotFoundException(String message) {
+        super(message);
     }
 }
