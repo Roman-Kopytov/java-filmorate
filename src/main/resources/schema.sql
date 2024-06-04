@@ -1,4 +1,4 @@
-create table if not exists "rating"
+create table if not exists "mpa"
 (
     "rating_id" INTEGER                not null
     primary key,
@@ -22,7 +22,7 @@ create table if not exists "films"
     "genre_id"    INTEGER                not null,
     "rating_id"   INTEGER                not null,
     constraint "films_rating_id_foreign"
-    foreign key ("rating_id") references "rating"
+    foreign key ("rating_id") references "mpa"
     );
 
 create table if not exists "film_genre"

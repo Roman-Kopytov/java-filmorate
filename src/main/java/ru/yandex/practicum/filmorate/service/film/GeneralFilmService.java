@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmRepository;
-import ru.yandex.practicum.filmorate.storage.user.UserRepository;
+import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
+import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -21,13 +22,13 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public Film create(Film film) {
-        return filmRepository.create(film);
+        return filmRepository.save(film);
     }
 
     @Override
     public Film update(Film film) {
         long filmId = film.getId();
-        if (filmRepository.get(filmId).isEmpty()) {
+        if (filmRepository.getById(filmId).isEmpty()) {
             throw new NotFoundException("Film not found with id: " + filmId);
         }
         return filmRepository.update(film);
@@ -54,11 +55,11 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film getFilmFromRepository(long filmId) {
-        return filmRepository.get(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return filmRepository.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
-        return userRepository.get(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
