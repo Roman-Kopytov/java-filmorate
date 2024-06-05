@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,26 +19,27 @@ public class GeneralUserService implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public User create(User user) {
+    public UserDto create(User user) {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
-        return userRepository.save(user);
+        return UserMapper.mapToUserDto(userRepository.save(user));
     }
 
     @Override
-    public User update(User user) {
+    public UserDto update(User user) {
         long userId = user.getId();
         Optional<User> savedUSer = userRepository.getById(userId);
         if (savedUSer.isEmpty()) {
             throw new NotFoundException("User not found with id: " + userId);
         }
-        return userRepository.save(user);
+        return UserMapper.mapToUserDto(userRepository.save(user));
     }
 
     @Override
-    public User get(long userId) {
-        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+    public UserDto get(long userId) {
+        return UserMapper.mapToUserDto(userRepository.getById(userId).orElseThrow(()
+                -> new NotFoundException("User not found with id: " + userId)));
     }
 
     @Override

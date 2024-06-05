@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -21,7 +21,8 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public Optional<User> getById(long userId) {
-        return Optional.empty();
+        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
+                Map.of("userId", userId), userRowMapper));
     }
 
     @Override
@@ -32,16 +33,15 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public User save(User user) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        Map<String, Object> map = Map.of("email", user.getEmail(),
-                "login", user.getLogin(),
-                "name", user.getName(),
-                "birthday", user.getBirthday());
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValues(map);
-        jdbcOperations.update("INSERT INTO users (email,login,name,birthday)" +
-                        " VALUES(:email,:login,:name,:birthday)",
-                params, keyHolder, new String[]{"user_id"});
-        user.setId(keyHolder.getKeyAs(Long.class));
+        Map<String, Object> map = Map.of("EMAIL", user.getEmail(),
+                "LOGIN", user.getLogin(),
+                "NAME", user.getName(),
+                "BIRTHDAY", user.getBirthday());
+        MapSqlParameterSource params = new MapSqlParameterSource(map);
+        String sql = "INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY)" +
+                " VALUES(:EMAIL,:LOGIN,:NAME,:BIRTHDAY)";
+        jdbcOperations.update(sql, params, keyHolder);
+        user.setId(keyHolder.getKey().longValue());
         return user;
     }
 
@@ -53,13 +53,13 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public void addFriend(User user, User friend) {
-        jdbcOperations.update("INSERT INTO friends (user_id, friend_id) VALUES (:userId, :friendId)",
+        jdbcOperations.update("INSERT INTO FRIENDSHIP (user_id, friend_id) VALUES (:userId, :friendId)",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
-        jdbcOperations.update("DElETE FROM friends WHERE user_id = :userId AND friend_id = :friendId",
+        jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
     }
 
