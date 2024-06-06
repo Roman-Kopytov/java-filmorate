@@ -1,12 +1,12 @@
-merge into mpa (rating_id, name)
+merge into mpa (mpa_id, name)
     values (1, 'G');
-merge into mpa (rating_id, name)
+merge into mpa (mpa_id, name)
     values (2, 'PG');
-merge into mpa (rating_id, name)
+merge into mpa (mpa_id, name)
     values (3, 'PG-13');
-merge into mpa (rating_id, name)
+merge into mpa (mpa_id, name)
     values (4, 'R');
-merge into mpa (rating_id, name)
+merge into mpa (mpa_id, name)
     values (5, 'NC-17');
 
 merge into genres (genre_id, name)

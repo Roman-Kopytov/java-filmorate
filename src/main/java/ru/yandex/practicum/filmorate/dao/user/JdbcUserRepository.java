@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -47,20 +48,21 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public List<User> getUserFriends(User user) {
-        return jdbcOperations.queryForList("SELECT friend_id FROM friends WHERE userId = :userId",
-                Map.of("userId", user.getId()), User.class);
+        return jdbcOperations.query("SELECT * FROM USERS WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)",
+                Map.of("userId", user.getId()), userRowMapper);
     }
 
     @Override
     public void addFriend(User user, User friend) {
-        jdbcOperations.update("INSERT INTO FRIENDSHIP (user_id, friend_id) VALUES (:userId, :friendId)",
-                Map.of("userId", user.getId(), "friendId", friend.getId()));
+        jdbcOperations.update("INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID) " +
+                        "VALUES (:userId,:friendId)",
+                Map.of("userId", friend.getId(), "friendId", user.getId()));
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
-                Map.of("userId", user.getId(), "friendId", friend.getId()));
+                Map.of("userId", friend.getId(), "friendId", user.getId()));
     }
 
 }

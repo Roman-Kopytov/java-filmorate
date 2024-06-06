@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
+
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
     @Override
@@ -17,7 +19,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setDescription(rs.getString("description"));
         film.setDuration(rs.getInt("duration"));
         film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
-        film.setGenreIds((List<Integer>) rs.getArray("genre_id"));
+        film.setGenreIds((Set<Integer>) rs.getArray("genre_id"));
         film.setMpa(rs.getInt("mpa"));
         return film;
     }

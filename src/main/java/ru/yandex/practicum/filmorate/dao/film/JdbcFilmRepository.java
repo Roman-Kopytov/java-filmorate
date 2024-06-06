@@ -25,7 +25,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Optional<Film> getById(long filmId) {
-        return jdbcOperations.query("SELECT * FROM films join mpa join genres WHERE film_id =:filmId",
+        return jdbcOperations.query("SELECT * FROM FILMS join mpa join genres WHERE film_id =:filmId",
                 Map.of("filmId", filmId), filmExtractor);
     }
 
@@ -37,11 +37,11 @@ public class JdbcFilmRepository implements FilmRepository {
                 "releaseDate", film.getReleaseDate(),
                 "duration", film.getDuration(),
                 "genre_id", film.getGenreId(),
-                "rating_id", film.getMpa());
+                "MPA_ID", film.getMpa());
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
-        jdbcOperations.update("INSERT INTO films (name,description,releaseDate,duration,genre_id,rating_id)" +
-                        " VALUES(:name,:description,:releaseDate,:duration,:genre_id,:rating_id)",
+        jdbcOperations.update("INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)" +
+                        " VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)",
                 params, keyHolder, new String[]{"film_id"});
         film.setId(keyHolder.getKeyAs(Long.class));
         return film;

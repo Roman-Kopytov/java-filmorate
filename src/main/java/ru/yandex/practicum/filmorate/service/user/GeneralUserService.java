@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +58,7 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<User> getCommonFriends(long id, long otherId) {
+    public List<UserDto> getCommonFriends(long id, long otherId) {
         List<User> userFriends = getFriendsFromRepository(id);
         List<User> otherUserFriends = getFriendsFromRepository(otherId);
         List<User> commonFriends = new ArrayList<>();
@@ -66,12 +67,12 @@ public class GeneralUserService implements UserService {
                 commonFriends.add(user);
             }
         }
-        return commonFriends;
+        return commonFriends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     @Override
-    public List<User> getUserFriends(long id) {
-        return getFriendsFromRepository(id);
+    public List<UserDto> getUserFriends(long id) {
+        return getFriendsFromRepository(id).stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     private List<User> getFriendsFromRepository(long id) {
@@ -79,7 +80,10 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<User> getAll() {
-        return userRepository.getAll();
+    public List<UserDto> getAll() {
+        return userRepository.getAll()
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 }

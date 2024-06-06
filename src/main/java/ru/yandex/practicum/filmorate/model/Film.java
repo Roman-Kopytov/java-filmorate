@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Marker.Update;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Film.
@@ -30,7 +31,7 @@ public class Film {
     @NotNull
     private int duration;
     @NotNull
-    private List<Integer> genreIds;
+    private Set<Integer> genreIds;
     @NotNull
     private int mpa;
 
