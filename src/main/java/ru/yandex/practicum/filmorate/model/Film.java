@@ -5,8 +5,9 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,20 +21,17 @@ public class Film {
     private Long id;
     @NotBlank
     private String name;
-
     @NotBlank
     @Size(max = 200)
     private String description;
-
     private LocalDate releaseDate;
-
     @Positive
     @NotNull
-    private int duration;
+    private Long duration;
     @NotNull
-    private Set<Integer> genreIds;
+    private Set<Genre> genres;
     @NotNull
-    private int mpa;
+    private Mpa mpa;
 
     @AssertTrue
     public boolean isReleaseDateValid() {
@@ -41,13 +39,5 @@ public class Film {
             return releaseDate.isAfter(START_FILM_DATA);
         }
         return true;
-    }
-
-    public Integer getRating() {
-        return  mpa;
-    }
-
-    public List<Integer> getGenreId() {
-        return new ArrayList<>(genreIds);
     }
 }

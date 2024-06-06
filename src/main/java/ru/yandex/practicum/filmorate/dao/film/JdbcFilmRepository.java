@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.film;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
@@ -10,10 +11,7 @@ import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,14 +34,21 @@ public class JdbcFilmRepository implements FilmRepository {
                 "description", film.getDescription(),
                 "releaseDate", film.getReleaseDate(),
                 "duration", film.getDuration(),
-                "genre_id", film.getGenreId(),
                 "MPA_ID", film.getMpa());
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
         jdbcOperations.update("INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)" +
                         " VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)",
                 params, keyHolder, new String[]{"film_id"});
-        film.setId(keyHolder.getKeyAs(Long.class));
+
+//        film.setId(keyHolder.getKeyAs(Long.class));
+//        Map<String, Integer> batchValue = new HashMap<>();
+//        for (Map.Entry<String, Integer> entry : film.getGenres().entrySet()) {
+//            batchValue.put("film_id", keyHolder.getKeyAs(Integer.class));
+//            batchValue.put("genre_id", entry.getValue());
+//        }
+//        jdbcOperations.batchUpdate("INSERT INTO FILMS_GENRES (film_id,genre_id)",
+//                SqlParameterSourceUtils.createBatch(batchValue));
         return film;
     }
 
@@ -54,7 +59,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getAll() {
-        return jdbcOperations.query("SELECT * FROM films",filmRowMapper);
+        return jdbcOperations.query("SELECT * FROM films", filmRowMapper);
     }
 
     @Override

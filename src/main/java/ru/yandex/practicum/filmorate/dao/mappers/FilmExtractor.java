@@ -22,12 +22,12 @@ public class FilmExtractor implements ResultSetExtractor<Optional<Film>> {
             film.setId(rs.getLong("id"));
             film.setName(rs.getString("name"));
             film.setDescription(rs.getString("description"));
-            film.setDuration(rs.getInt("duration"));
+            film.setDuration(rs.getLong("duration"));
             film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
-            Array genreId = rs.get("genre_id");
-            film.setGenreIds((
-                    while st
-                    Set<Integer>) );
+//            Array genreId = rs.get("genre_id");
+//            film.setGenreIds((
+//                    while st
+//                    Set<Integer>) );
             film.setMpa(rs.getInt("mpa"));
         }
         return Optional.of(film);

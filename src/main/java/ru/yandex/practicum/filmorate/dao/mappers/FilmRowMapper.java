@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 
 @Component
@@ -17,9 +16,9 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setId(rs.getLong("id"));
         film.setName(rs.getString("name"));
         film.setDescription(rs.getString("description"));
-        film.setDuration(rs.getInt("duration"));
+        film.setDuration(rs.getLong("duration"));
         film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
-        film.setGenreIds((Set<Integer>) rs.getArray("genre_id"));
+//        film.setGenres((Set<Integer>) rs.getArray("genre_id"));
         film.setMpa(rs.getInt("mpa"));
         return film;
     }
