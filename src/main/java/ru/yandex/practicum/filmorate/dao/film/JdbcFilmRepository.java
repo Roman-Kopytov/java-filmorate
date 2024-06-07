@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
@@ -8,7 +9,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dao.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -23,8 +26,11 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Optional<Film> getById(long filmId) {
-        return jdbcOperations.query("SELECT * FROM FILMS join mpa join genres WHERE film_id =:filmId",
-                Map.of("filmId", filmId), filmExtractor);
+        return Optional.ofNullable(jdbcOperations.query("SELECT * FROM FILMS join MPA on(FILMS.MPA_ID=MPA.MPA_ID)" +
+                        "join FILMS_GENRES on (FILMS.FILM_ID = FILMS_GENRES.FILM_ID) " +
+                        "join GENRES on (FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID) " +
+                        "WHERE film_id =:filmId",
+                Map.of("filmId", filmId), filmExtractor));
     }
 
     @Override
@@ -41,14 +47,14 @@ public class JdbcFilmRepository implements FilmRepository {
                         " VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)",
                 params, keyHolder, new String[]{"film_id"});
 
-//        film.setId(keyHolder.getKeyAs(Long.class));
-//        Map<String, Integer> batchValue = new HashMap<>();
-//        for (Map.Entry<String, Integer> entry : film.getGenres().entrySet()) {
-//            batchValue.put("film_id", keyHolder.getKeyAs(Integer.class));
-//            batchValue.put("genre_id", entry.getValue());
-//        }
-//        jdbcOperations.batchUpdate("INSERT INTO FILMS_GENRES (film_id,genre_id)",
-//                SqlParameterSourceUtils.createBatch(batchValue));
+        film.setId(keyHolder.getKeyAs(Long.class));
+        Map<String, Integer> batchValue = new HashMap<>();
+        for (Genre genre : film.getGenres()) {
+            batchValue.put("film_id", keyHolder.getKeyAs(Integer.class));
+            batchValue.put("genre_id", genre.getId());
+        }
+        jdbcOperations.batchUpdate("INSERT INTO FILMS_GENRES (film_id,genre_id)",
+                SqlParameterSourceUtils.createBatch(batchValue));
         return film;
     }
 
@@ -59,7 +65,20 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getAll() {
-        return jdbcOperations.query("SELECT * FROM films", filmRowMapper);
+        List<Genre> allGenres = jdbcOperations.query("SELECT * FROM GENRES", new GenreRowMapper());
+        List<Film> allFilms = jdbcOperations.query("SELECT * FROM FILMS join MPA on(FILMS.MPA_ID=MPA.MPA_ID)",
+                new FilmRowMapper());
+        record GenreRelations(Long film_id, Integer genre_id) {
+        }
+        List<GenreRelations> genreRelations = jdbcOperations.queryForList("SELECT * FROM FILMS join FILMS_GENRES " +
+                "on (FILMS.FILM_ID = FILMS_GENRES.FILM_ID)", Map.of(), GenreRelations.class);
+        List<Film> films = new ArrayList<>();
+        for (Film film : allFilms) {
+            for (Genre)
+            film.setGenres();
+            film.
+        }
+        return
     }
 
     @Override

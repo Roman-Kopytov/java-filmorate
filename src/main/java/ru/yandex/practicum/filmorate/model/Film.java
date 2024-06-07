@@ -5,10 +5,7 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Film.
@@ -29,7 +26,7 @@ public class Film {
     @NotNull
     private Long duration;
     @NotNull
-    private Set<Genre> genres;
+    private Set<Genre> genres=new LinkedHashSet<>();
     @NotNull
     private Mpa mpa;
 
