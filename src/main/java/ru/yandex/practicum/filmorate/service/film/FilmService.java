@@ -21,4 +21,7 @@ public interface FilmService {
     void deleteLike(long userId, long filmId);
 
     List<Film> getPopularFilms(int count);
+
+
+    Film getById(long id);
 }

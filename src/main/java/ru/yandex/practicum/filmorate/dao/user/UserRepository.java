@@ -3,14 +3,15 @@ package ru.yandex.practicum.filmorate.dao.user;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserRepository {
-    Optional<User> getById(long userId);
+    User getById(long userId);
 
     List<User> getAll();
 
     User save(User user);
+
+    User update(User user);
 
     List<User> getUserFriends(User user);
 

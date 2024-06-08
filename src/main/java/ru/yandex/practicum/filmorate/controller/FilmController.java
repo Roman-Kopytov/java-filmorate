@@ -27,6 +27,12 @@ public class FilmController {
         return filmService.getAll();
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable("id") long id) {
+        log.info("==>GET films/{}", id);
+        return filmService.getById(id);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated

@@ -27,7 +27,7 @@ public class Film {
     private Long duration;
     @NotNull
     private Set<Genre> genres=new LinkedHashSet<>();
-    @NotNull
+@NotNull
     private Mpa mpa;
 
     @AssertTrue

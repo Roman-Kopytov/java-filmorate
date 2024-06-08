@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,6 +10,7 @@ import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +19,10 @@ public class GeneralFilmService implements FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
 
+    @Override
+    public Film getById(long id) {
+        return getFilmFromRepository(id);
+    }
 
     @Override
     public Film create(Film film) {
@@ -28,10 +32,7 @@ public class GeneralFilmService implements FilmService {
     @Override
     public Film update(Film film) {
         long filmId = film.getId();
-        if (filmRepository.getById(filmId).isEmpty()) {
-            throw new NotFoundException("Film not found with id: " + filmId);
-        }
-        return filmRepository.update(film);
+        return filmRepository.update(getFilmFromRepository(filmId));
     }
 
     @Override
@@ -55,11 +56,11 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film getFilmFromRepository(long filmId) {
-        return filmRepository.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return Optional.ofNullable(filmRepository.getById(filmId)).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
-        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
@@ -73,4 +74,6 @@ public class GeneralFilmService implements FilmService {
 
         return sortedFilms;
     }
+
+
 }

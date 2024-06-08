@@ -18,17 +18,17 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
     public Film extractData(ResultSet rs) throws SQLException, DataAccessException {
         Film film = new Film();
         Set<Genre> genresSet = new LinkedHashSet<>();
-        film.setId(rs.getLong("id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setDuration(rs.getLong("duration"));
-        film.setReleaseDate(rs.getDate("releaseDate").toLocalDate());
+        film.setId(rs.getLong("FILMS.FILM_ID"));
+        film.setName(rs.getString("FILMS.NAME"));
+        film.setDescription(rs.getString("FILMS.DESCRIPTION"));
+        film.setDuration(rs.getLong("FILMS.DURATION"));
+        film.setReleaseDate(rs.getDate("FILMS.RELEASE_DATE").toLocalDate());
         film.setMpa(new Mpa(rs.getInt("MPA.MPA_ID"), rs.getString("MPA.NAME")));
         while (rs.next()) {
-            genresSet.add(new Genre(rs.getInt("GENRES.genre_id"),
-                    rs.getString("GENRES.name")));
-            film.setGenres(genresSet);
+            genresSet.add(new Genre(rs.getLong(" GENRES.GENRE_ID"),
+                    rs.getString("GENRES.NAME")));
         }
+        film.setGenres(genresSet);
         return film;
     }
 }

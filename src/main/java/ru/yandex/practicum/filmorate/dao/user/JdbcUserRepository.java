@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -21,9 +20,9 @@ public class JdbcUserRepository implements UserRepository {
     private final UserRowMapper userRowMapper;
 
     @Override
-    public Optional<User> getById(long userId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
-                Map.of("userId", userId), userRowMapper));
+    public User getById(long userId) {
+        return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
+                Map.of("userId", userId), userRowMapper);
     }
 
     @Override
@@ -44,6 +43,21 @@ public class JdbcUserRepository implements UserRepository {
         jdbcOperations.update(sql, params, keyHolder);
         user.setId(keyHolder.getKey().longValue());
         return user;
+    }
+
+    @Override
+    public User update(User user) {
+        Map<String, Object> map = Map.of("ID", user.getId(),
+                "EMAIL", user.getEmail(),
+                "LOGIN", user.getLogin(),
+                "NAME", user.getName(),
+                "BIRTHDAY", user.getBirthday());
+        MapSqlParameterSource params = new MapSqlParameterSource(map);
+        String sql = "UPDATE USERS" +
+                " SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY WHERE USER_ID=:ID";
+        jdbcOperations.update(sql, params);
+        return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
+                Map.of("userId", user.getId()), userRowMapper);
     }
 
     @Override
