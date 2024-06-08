@@ -17,13 +17,19 @@ public class JdbcGenreRepository implements GenreRepository {
     @Override
     public List<Genre> findByIds(List<Long> ids) {
         return jdbcOperations.query("SELECT * FROM GENRES WHERE GENRE_ID IN (:ids)",
-                new MapSqlParameterSource("ids", ids),new GenreRowMapper());
+                new MapSqlParameterSource("ids", ids), new GenreRowMapper());
     }
 
     @Override
     public Genre getById(Long id) {
-        return  jdbcOperations.queryForObject("SELECT * FROM GENRES WHERE GENRE_ID = :id",
-                new MapSqlParameterSource("id", id),new GenreRowMapper());
+        return jdbcOperations.queryForObject("SELECT * FROM GENRES WHERE GENRE_ID = :id",
+                new MapSqlParameterSource("id", id), new GenreRowMapper());
+    }
+
+    @Override
+    public List<Genre> getAll() {
+        return jdbcOperations.query("SELECT * FROM GENRES",
+                new GenreRowMapper());
     }
 
 }

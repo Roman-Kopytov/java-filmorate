@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,7 +30,7 @@ public class Film {
     @NotNull
     private Long duration;
     @NotNull
-    private Set<Genre> genres = new LinkedHashSet<>();
+    private Set<Genre> genres;
     @NotNull
     private Mpa mpa;
 

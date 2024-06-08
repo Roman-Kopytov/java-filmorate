@@ -31,15 +31,17 @@ public class FilmController {
     @GetMapping("/{id}")
     public FilmDto getFilmById(@PathVariable("id") long id) {
         log.info("==>GET films/{}", id);
-        return filmService.getById(id);
+        FilmDto savedFilm = filmService.getById(id);
+        log.info("GET /films/{} <== {}",id, savedFilm);
+        return savedFilm;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
-    public Film create(@Valid @RequestBody Film film) {
+    public FilmDto create(@Valid @RequestBody Film film) {
         log.info("==>POST /films {}", film);
-        Film createdFilm = filmService.create(film);
+        FilmDto createdFilm = filmService.create(film);
         log.info("POST /films <== {}", createdFilm);
         return createdFilm;
     }

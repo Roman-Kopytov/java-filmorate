@@ -35,9 +35,9 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public Film create(Film film) {
+    public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            return filmRepository.save(film);
+            return FilmMapper.mapToUserDto(filmRepository.save(film));
         }
         return null;
     }

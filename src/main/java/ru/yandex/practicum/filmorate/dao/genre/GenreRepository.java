@@ -8,4 +8,6 @@ public interface GenreRepository {
     public List<Genre> findByIds(List<Long> ids) ;
 
     Genre getById(Long id);
+
+    List<Genre> getAll();
 }

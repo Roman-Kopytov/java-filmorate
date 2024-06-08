@@ -19,6 +19,6 @@ public class GeneralGenreService implements GenreService {
 
     @Override
     public List<Genre> getAllGenres() {
-        return List.of();
+        return genreRepository.getAll();
     }
 }

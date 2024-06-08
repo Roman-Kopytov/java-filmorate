@@ -19,6 +19,6 @@ public class FilmDto {
     private String description;
     private LocalDate releaseDate;
     private Long duration;
-    private Set<Genre> genres = new LinkedHashSet<>();
+    private Set<Genre> genres;
     private Mpa mpa;
 }

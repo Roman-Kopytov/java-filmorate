@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public interface FilmService {
 
-    Film create(Film film);
+    FilmDto create(Film film);
 
     Film update(Film film);
 

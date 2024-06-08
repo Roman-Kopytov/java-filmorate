@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.dao.film;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
-import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
@@ -56,16 +56,16 @@ public class JdbcFilmRepository implements FilmRepository {
 
     private void saveFilmGenres(Film film) {
         if (film.getGenres().isEmpty()) {
-            return;
+            film.setGenres(null);
         }
-        Set<Genre> genres = film.getGenres();
-        Map<String, Long> batchValue = new HashMap<>();
-        for (Genre genre : genres) {
-            batchValue.put("film_id", film.getId());
-            batchValue.put("genre_id", genre.getId());
-        }
+        var batchValue = film.getGenres().stream()
+                .map(genre -> new MapSqlParameterSource()
+                        .addValue("film_id", film.getId())
+                        .addValue("genre_id", genre.getId()))
+                .toList();
+
         jdbcOperations.batchUpdate("INSERT INTO FILMS_GENRES (film_id,genre_id) VALUES (:film_id,:genre_id)",
-                SqlParameterSourceUtils.createBatch(batchValue));
+                batchValue.toArray(new SqlParameterSource[0]));
 
     }
 
@@ -139,7 +139,7 @@ public class JdbcFilmRepository implements FilmRepository {
     @Override
     public void addLike(Film film, User user) {
         jdbcOperations.update("INSERT INTO LIKES (film_id,user_id) VALUES (:film_id,:user_id)",
-                Map.of("film_id", film.getId(),"user_id", user.getId()));
+                Map.of("film_id", film.getId(), "user_id", user.getId()));
     }
 
     @Override
