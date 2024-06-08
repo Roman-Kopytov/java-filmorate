@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -12,9 +13,7 @@ public interface FilmService {
 
     Film update(Film film);
 
-    Film get(long filmId);
-
-    List<Film> getAll();
+    List<FilmDto> getAll();
 
     void addLike(long userId, long filmId);
 
@@ -23,5 +22,5 @@ public interface FilmService {
     List<Film> getPopularFilms(int count);
 
 
-    Film getById(long id);
+    FilmDto getById(long id);
 }

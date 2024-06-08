@@ -11,10 +11,11 @@ public final class FilmMapper {
         FilmDto dto = new FilmDto();
         dto.setId(film.getId());
         dto.setName(film.getName());
+        dto.setReleaseDate(film.getReleaseDate());
         dto.setDescription(film.getDescription());
         dto.setDuration(film.getDuration());
         dto.setMpa(film.getMpa());
-//        dto.setGenreIds(film.getGenres());
+        dto.setGenres(film.getGenres());
         return dto;
     }
 }

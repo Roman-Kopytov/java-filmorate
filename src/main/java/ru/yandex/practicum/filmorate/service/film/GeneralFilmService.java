@@ -2,15 +2,22 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
+import ru.yandex.practicum.filmorate.dao.genre.GenreRepository;
+import ru.yandex.practicum.filmorate.dao.mpa.MpaRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
+import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,31 +25,38 @@ public class GeneralFilmService implements FilmService {
 
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
+    private final GenreRepository genreRepository;
+    private final MpaRepository mpaRepository;
 
     @Override
-    public Film getById(long id) {
-        return getFilmFromRepository(id);
+    public FilmDto getById(long id) {
+        return FilmMapper.mapToUserDto(getFilmFromRepository(id));
+
     }
 
     @Override
     public Film create(Film film) {
-        return filmRepository.save(film);
+        if (isGenresValid(film) && isMpaValid(film)) {
+            return filmRepository.save(film);
+        }
+        return null;
     }
 
     @Override
     public Film update(Film film) {
-        long filmId = film.getId();
-        return filmRepository.update(getFilmFromRepository(filmId));
+        if (isGenresValid(film) && isMpaValid(film)) {
+            long filmId = film.getId();
+            getFilmFromRepository(filmId);
+            return filmRepository.update(film);
+        }
+        return null;
     }
 
     @Override
-    public Film get(long filmId) {
-        return getFilmFromRepository(filmId);
-    }
-
-    @Override
-    public List<Film> getAll() {
-        return filmRepository.getAll();
+    public List<FilmDto> getAll() {
+        return filmRepository.getAll().stream()
+                .map(FilmMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -65,15 +79,29 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        List<Film> sortedFilms = filmRepository.getLikes().entrySet().stream()
-                .sorted((entry1, entry2) -> Integer.compare(entry2.getValue().size(), entry1.getValue().size()))
-                .limit(count)
-                .map(Map.Entry::getKey)
-                .map(this::getFilmFromRepository)
-                .toList();
-
-        return sortedFilms;
+        return filmRepository.getTopPopular(count);
     }
 
+
+    private boolean isMpaValid(Film film) {
+        Mpa filmMpa = film.getMpa();
+        if (mpaRepository.findById(filmMpa.getId()).size() != 1) {
+            throw new BadBodyRequestException("These Mpa_Ids" + filmMpa.getId() + " not contains in DATA");
+        }
+        return true;
+    }
+
+    private boolean isGenresValid(Film film) {
+        List<Long> filmGenreIds = film.getGenres().stream()
+                .map(g -> g.getId())
+                .toList();
+
+        List<Genre> genres = genreRepository.findByIds(filmGenreIds);
+
+        if (genres.size() != filmGenreIds.size()) {
+            throw new BadBodyRequestException("These Genre_Ids " + filmGenreIds + " not contains in DATA");
+        }
+        return true;
+    }
 
 }

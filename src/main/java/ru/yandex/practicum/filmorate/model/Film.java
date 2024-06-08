@@ -2,15 +2,18 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Film.
  */
 @Data
+@EqualsAndHashCode(of = "id")
 public class Film {
 
     private static final LocalDate START_FILM_DATA = LocalDate.of(1895, 12, 28);
@@ -26,8 +29,8 @@ public class Film {
     @NotNull
     private Long duration;
     @NotNull
-    private Set<Genre> genres=new LinkedHashSet<>();
-@NotNull
+    private Set<Genre> genres = new LinkedHashSet<>();
+    @NotNull
     private Mpa mpa;
 
     @AssertTrue

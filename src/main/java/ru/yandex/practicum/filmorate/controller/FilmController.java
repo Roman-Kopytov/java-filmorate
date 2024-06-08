@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
@@ -23,12 +24,12 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public List<Film> getAllFilms() {
+    public List<FilmDto> getAllFilms() {
         return filmService.getAll();
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable("id") long id) {
+    public FilmDto getFilmById(@PathVariable("id") long id) {
         log.info("==>GET films/{}", id);
         return filmService.getById(id);
     }
