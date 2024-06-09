@@ -70,13 +70,13 @@ public class JdbcUserRepository implements UserRepository {
     public void addFriend(User user, User friend) {
         jdbcOperations.update("INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID) " +
                         "VALUES (:userId,:friendId)",
-                Map.of("userId", friend.getId(), "friendId", user.getId()));
+                Map.of("userId", user.getId(), "friendId", friend.getId()));
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
-                Map.of("userId", friend.getId(), "friendId", user.getId()));
+                Map.of("userId", user.getId(), "friendId", friend.getId()));
     }
 
 }

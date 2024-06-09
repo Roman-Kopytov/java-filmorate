@@ -22,16 +22,21 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
         LinkedHashSet<Genre> genresSet = new LinkedHashSet<>();
         Film film = new Film();
         while (rs.next()) {
-
             film.setId(rs.getLong("FILM_ID"));
             film.setName(rs.getString("FILMS.NAME"));
             film.setDescription(rs.getString("FILMS.DESCRIPTION"));
             film.setDuration(rs.getLong("FILMS.DURATION"));
             film.setReleaseDate(rs.getDate("FILMS.RELEASE_DATE").toLocalDate());
             film.setMpa(new Mpa(rs.getInt("MPA.MPA_ID"), rs.getString("MPA.NAME")));
-            genresSet.add(new Genre(rs.getLong("GENRES.GENRE_ID"),
-                    rs.getString("GENRES.NAME")));
+            Long genreId = rs.getLong("GENRES.GENRE_ID");
+            if (rs.wasNull()) {
+                continue;
+            } else {
+                genresSet.add(new Genre(genreId, rs.getString("GENRES.NAME")));
+            }
+
         }
+
         film.setGenres(genresSet);
         return film;
     }
