@@ -10,7 +10,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class GeneralGenreService implements GenreService {
-    final private GenreRepository genreRepository;
+    private final GenreRepository genreRepository;
 
     @Override
     public Genre getById(long id) {

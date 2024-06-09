@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class Genre {
-    final private Long id;
-    final private String name;
+    private final Long id;
+    private final String name;
 
 }

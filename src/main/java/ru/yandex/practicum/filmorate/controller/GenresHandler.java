@@ -18,7 +18,8 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class GenresHandler {
-    final private GenreService genreService;
+
+    private final GenreService genreService;
 
     @GetMapping("/{id}")
     public Genre getGenreById(@PathVariable("id") long id) {
