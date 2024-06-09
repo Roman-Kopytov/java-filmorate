@@ -11,7 +11,7 @@ public interface FilmService {
 
     FilmDto create(Film film);
 
-    Film update(Film film);
+    FilmDto update(Film film);
 
     List<FilmDto> getAll();
 

@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -19,10 +19,8 @@ public final class FilmMapper {
         dto.setDescription(film.getDescription());
         dto.setDuration(film.getDuration());
         dto.setMpa(film.getMpa());
-//        dto.setGenres(film.getGenres());
-        dto.setGenres(film.getGenres().stream()
-                .map(genre -> new Genre(genre.getId(),null))
-                .collect(Collectors.toSet()));
+        dto.setGenres(film.getGenres());
+
         return dto;
     }
 }

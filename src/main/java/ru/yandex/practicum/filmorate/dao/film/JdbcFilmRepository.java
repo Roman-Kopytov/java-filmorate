@@ -55,8 +55,9 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     private void saveFilmGenres(Film film) {
-        if (film.getGenres().isEmpty()) {
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
             film.setGenres(null);
+            return;
         }
         var batchValue = film.getGenres().stream()
                 .map(genre -> new MapSqlParameterSource()
@@ -103,14 +104,14 @@ public class JdbcFilmRepository implements FilmRepository {
         final List<Genre> genres = getAllGenres();
         final List<Film> films = jdbcOperations.query("SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
                 "FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID", new FilmRowMapper());
-        final Map<Long, Set<Genre>> filmGenres = getAllFilmsGenres(genres);
+        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
 
-        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new HashSet<>())));
+        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         return films;
     }
 
-    Map<Long, Set<Genre>> getAllFilmsGenres(final List<Genre> allGenres) {
-        final Map<Long, Set<Genre>> filmGenres = new HashMap<>();
+    Map<Long, LinkedHashSet<Genre>> getAllFilmsGenres(final List<Genre> allGenres) {
+        final Map<Long, LinkedHashSet<Genre>> filmGenres = new HashMap<>();
         jdbcOperations.query("SELECT * FROM FILMS_GENRES", rs -> {
                     while (rs.next()) {
                         final long filmId = rs.getLong("film_id");
@@ -119,7 +120,7 @@ public class JdbcFilmRepository implements FilmRepository {
                                 .filter(g -> g.getId() == genreId)
                                 .findFirst()
                                 .get();
-                        filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+                        filmGenres.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(genre);
                     }
                 }
         );
@@ -160,9 +161,9 @@ public class JdbcFilmRepository implements FilmRepository {
                         "ORDER BY COUNT(LIKES.USER_ID) desc " +
                         "LIMIT :count",
                 Map.of("count", count), new FilmRowMapper());
-        final Map<Long, Set<Genre>> filmGenres = getAllFilmsGenres(genres);
+        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
 
-        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new HashSet<>())));
+        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         return films;
     }
 }

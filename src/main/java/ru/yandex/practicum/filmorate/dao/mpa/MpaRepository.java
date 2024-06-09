@@ -6,4 +6,10 @@ import java.util.List;
 
 public interface MpaRepository {
     List<Mpa> findById(Integer id);
+
+    List<Mpa> getAll();
+
+    Mpa getById(Integer id);
+
+
 }

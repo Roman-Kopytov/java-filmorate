@@ -48,9 +48,9 @@ public class FilmController {
 
     @PutMapping
     @Validated({Update.class})
-    public Film update(@Valid @RequestBody Film film) {
+    public FilmDto update(@Valid @RequestBody Film film) {
         log.info("==>PUT /films {}", film);
-        Film updatedFilm = filmService.update(film);
+        FilmDto updatedFilm = filmService.update(film);
         log.info("PUT /films <== {}", updatedFilm);
         return updatedFilm;
     }

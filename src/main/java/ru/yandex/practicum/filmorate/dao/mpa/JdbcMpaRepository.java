@@ -19,4 +19,17 @@ public class JdbcMpaRepository implements MpaRepository {
         return jdbcOperations.query("SELECT * FROM mpa WHERE MPA.MPA_ID = :id",
                 new MapSqlParameterSource("id", id), new MpaRowMapper());
     }
+
+    @Override
+    public List<Mpa> getAll() {
+        return jdbcOperations.query("SELECT * FROM mpa", new MpaRowMapper());
+    }
+
+    @Override
+    public Mpa getById(Integer id) {
+        return jdbcOperations.queryForObject("SELECT * FROM mpa WHERE MPA.MPA_ID = :id",
+                new MapSqlParameterSource("id", id),  new MpaRowMapper());
+    }
+
+
 }

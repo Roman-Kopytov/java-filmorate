@@ -9,17 +9,20 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedHashSet;
 
 @Component
 public class FilmExtractor implements ResultSetExtractor<Film> {
 
     @Override
     public Film extractData(ResultSet rs) throws SQLException, DataAccessException {
-        Film film = null;
-        Set<Genre> genresSet = new LinkedHashSet<>();
+        if (!rs.isBeforeFirst()) {
+            return null;
+        }
+        LinkedHashSet<Genre> genresSet = new LinkedHashSet<>();
+        Film film = new Film();
         while (rs.next()) {
-            film = new Film();
+
             film.setId(rs.getLong("FILM_ID"));
             film.setName(rs.getString("FILMS.NAME"));
             film.setDescription(rs.getString("FILMS.DESCRIPTION"));

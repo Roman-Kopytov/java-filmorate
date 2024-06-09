@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,7 +29,12 @@ public class HandleError {
         return new ErrorResponse(e.getMessage());
     }
 
-
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleEmptyResultDataAccessException(final EmptyResultDataAccessException e) {
+        log.info("Validation: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NotFoundException e) {

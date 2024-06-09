@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.util.Set;
  */
 @Data
 @EqualsAndHashCode(of = "id")
+@RequiredArgsConstructor
 public class Film {
 
     private static final LocalDate START_FILM_DATA = LocalDate.of(1895, 12, 28);
@@ -29,8 +31,8 @@ public class Film {
     @Positive
     @NotNull
     private Long duration;
-    @NotNull
-    private Set<Genre> genres;
+
+    private LinkedHashSet<Genre> genres;
     @NotNull
     private Mpa mpa;
 

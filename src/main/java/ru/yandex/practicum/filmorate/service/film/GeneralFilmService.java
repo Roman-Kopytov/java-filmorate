@@ -43,11 +43,11 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public Film update(Film film) {
+    public FilmDto update(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
             long filmId = film.getId();
             getFilmFromRepository(filmId);
-            return filmRepository.update(film);
+            return FilmMapper.mapToUserDto(filmRepository.update(film));
         }
         return null;
     }
@@ -92,6 +92,9 @@ public class GeneralFilmService implements FilmService {
     }
 
     private boolean isGenresValid(Film film) {
+        if (film.getGenres() == null){
+            return true;
+        }
         List<Long> filmGenreIds = film.getGenres().stream()
                 .map(g -> g.getId())
                 .toList();
