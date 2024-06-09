@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class JdbcUserRepository implements UserRepository {
         String sql = "INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY)" +
                 " VALUES(:EMAIL,:LOGIN,:NAME,:BIRTHDAY)";
         jdbcOperations.update(sql, params, keyHolder);
-        user.setId(keyHolder.getKey().longValue());
+        user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         return user;
     }
 

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
-import org.apache.coyote.BadRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -12,7 +11,7 @@ public interface FilmRepository {
 
     Film getById(long filmId);
 
-    Film save(Film film) ;
+    Film save(Film film);
 
     Film update(Film film);
 

@@ -8,5 +8,5 @@ public interface MpaService {
 
     Mpa getById(int id);
 
-    public List<Mpa> getAllGenres();
+    List<Mpa> getAllGenres();
 }

@@ -32,7 +32,7 @@ public class FilmController {
     public FilmDto getFilmById(@PathVariable("id") long id) {
         log.info("==>GET films/{}", id);
         FilmDto savedFilm = filmService.getById(id);
-        log.info("GET /films/{} <== {}",id, savedFilm);
+        log.info("GET /films/{} <== {}", id, savedFilm);
         return savedFilm;
     }
 

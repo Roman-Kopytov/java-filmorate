@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Film.

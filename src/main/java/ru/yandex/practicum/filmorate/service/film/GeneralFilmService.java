@@ -92,7 +92,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private boolean isGenresValid(Film film) {
-        if (film.getGenres() == null){
+        if (film.getGenres() == null) {
             return true;
         }
         List<Long> filmGenreIds = film.getGenres().stream()
