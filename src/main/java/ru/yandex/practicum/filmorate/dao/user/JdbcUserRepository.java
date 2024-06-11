@@ -67,6 +67,15 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
+    public List<User> getCommonFriends(User user, User otherUser) {
+        String sql = "SELECT * from USERS u WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)" +
+                " AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)";
+        return jdbcOperations.query(sql,
+                Map.of("userId", user.getId(),
+                        "otherUserId", otherUser.getId()), userRowMapper);
+    }
+
+    @Override
     public void addFriend(User user, User friend) {
         jdbcOperations.update("INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID) " +
                         "VALUES (:userId,:friendId)",

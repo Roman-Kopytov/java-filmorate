@@ -9,10 +9,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -68,11 +66,6 @@ public class JdbcFilmRepository implements FilmRepository {
         jdbcOperations.batchUpdate("INSERT INTO FILMS_GENRES (film_id,genre_id) VALUES (:film_id,:genre_id)",
                 batchValue.toArray(new SqlParameterSource[0]));
 
-    }
-
-
-    private List<Mpa> getAllMpa() {
-        return jdbcOperations.query("SELECT * FROM MPA", new MpaRowMapper());
     }
 
 

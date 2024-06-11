@@ -15,6 +15,8 @@ public interface UserRepository {
 
     List<User> getUserFriends(User user);
 
+    List<User> getCommonFriends(User user, User otherUser);
+
     void addFriend(User user, User friend);
 
     void deleteFriend(User user, User friend);

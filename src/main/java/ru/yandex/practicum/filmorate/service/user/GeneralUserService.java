@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,14 +58,7 @@ public class GeneralUserService implements UserService {
 
     @Override
     public List<UserDto> getCommonFriends(long id, long otherId) {
-        List<User> userFriends = getFriendsFromRepository(id);
-        List<User> otherUserFriends = getFriendsFromRepository(otherId);
-        List<User> commonFriends = new ArrayList<>();
-        for (User user : userFriends) {
-            if (otherUserFriends.contains(user)) {
-                commonFriends.add(user);
-            }
-        }
+        List<User> commonFriends = userRepository.getCommonFriends(getUserFromRepository(id), getUserFromRepository(otherId));
         return commonFriends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
