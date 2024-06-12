@@ -27,7 +27,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public List<User> getAll() {
-        return jdbcOperations.query("SELECT * FROM users", userRowMapper);
+        return jdbcOperations.query("SELECT * FROM users ORDER BY USER_ID ", userRowMapper);
     }
 
     @Override
