@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
-@Import({JdbcUserRepository.class})
+@Import({JdbcUserRepository.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class JdbcUserRepositoryTest {
 
@@ -33,15 +33,11 @@ class JdbcUserRepositoryTest {
     }
 
     static User getTestUser(long userId) {
-        int listId = (int) userId - 1;
-        LinkedList<User> users = new LinkedList<>();
         User user1 = new User(1L, "Katlynn17@yahoo.com", "karm0iglcY", "Mr. Kristi Senger", LocalDate.of(1977, 01, 07));
         User user2 = new User(2L, "Sierra28@hotmail.com", "bFiscFj1jl", "Eileen Mohr", LocalDate.of(1989, 07, 21));
         User user3 = new User(3L, "Buck.Rosenbaum@gmail.com", "HhWslNOalH", "Belinda Morissette", LocalDate.of(1966, 07, 26));
-        users.add(user1);
-        users.add(user2);
-        users.add(user3);
-        return users.get(listId);
+        LinkedList<User> users = new LinkedList<>(List.of(user1, user2, user3));
+        return users.get((int) userId - 1);
     }
 
     static User getUserForUpdate() {
@@ -55,7 +51,7 @@ class JdbcUserRepositoryTest {
     }
 
     @Test
-    void getAll() {
+    void testGetAll() {
         List<User> usersInData = userRepository.getAll();
         assertThat(usersInData)
                 .contains(getTestUser(1), getTestUser(2), getTestUser(3));

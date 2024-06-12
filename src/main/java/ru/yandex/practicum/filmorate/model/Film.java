@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
@@ -14,7 +15,8 @@ import java.util.LinkedHashSet;
  */
 @Data
 @EqualsAndHashCode(of = "id")
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
 
     private static final LocalDate START_FILM_DATA = LocalDate.of(1895, 12, 28);
