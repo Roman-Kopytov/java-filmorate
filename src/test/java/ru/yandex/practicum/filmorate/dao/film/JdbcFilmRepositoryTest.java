@@ -54,11 +54,10 @@ class JdbcFilmRepositoryTest {
                 .isEqualTo(getTestFilm(1));
     }
 
-
     @Test
     void testSave() {
-        Film Film = getFilmForUpdate();
-        Film.setId(null);
+        Film film = getFilmForUpdate();
+        film.setId(null);
         Film updatedFilm = filmRepository.save(getFilmForUpdate());
         Film filmInData = filmRepository.getById(updatedFilm.getId());
         assertThat(filmInData)
