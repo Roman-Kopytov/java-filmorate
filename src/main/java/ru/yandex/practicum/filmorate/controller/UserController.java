@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -23,27 +24,32 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public UserDto getUserById(@PathVariable int id) {
+        return userService.get(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
-    public User createUser(@Valid @RequestBody User user) {
+    public UserDto createUser(@Valid @RequestBody User user) {
         log.info("==>POST /users  {}", user);
-        userService.create(user);
-        log.info("POST /users <== {}", user);
-        return user;
+        UserDto newUser = userService.create(user);
+        log.info("POST /users <== {}", newUser);
+        return newUser;
     }
 
     @PutMapping
     @Validated({Update.class})
-    public User updateUser(@Valid @RequestBody User user) {
+    public UserDto updateUser(@Valid @RequestBody User user) {
         log.info("==>PUT /users  {}", user);
-        userService.update(user);
-        log.info("PUT /users <== {}", user);
-        return user;
+        UserDto updatedUser = userService.update(user);
+        log.info("PUT /users <== {}", updatedUser);
+        return updatedUser;
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -59,14 +65,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getUserFriends(@PathVariable("id") @Min(0) long id) {
+    public List<UserDto> getUserFriends(@PathVariable("id") @Min(0) long id) {
         log.info("==>GET /users/{}/friends", id);
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable("id") @Min(0) long id,
-                                       @PathVariable("otherId") @Min(0) long otherId) {
+    public List<UserDto> getCommonFriends(@PathVariable("id") @Min(0) long id,
+                                          @PathVariable("otherId") @Min(0) long otherId) {
         log.info("==>GET /users  {}", id);
         return userService.getCommonFriends(id, otherId);
     }

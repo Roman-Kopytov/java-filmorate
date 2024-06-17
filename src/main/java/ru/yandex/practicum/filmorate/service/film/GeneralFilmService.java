@@ -2,14 +2,22 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
+import ru.yandex.practicum.filmorate.dao.genre.GenreRepository;
+import ru.yandex.practicum.filmorate.dao.mpa.MpaRepository;
+import ru.yandex.practicum.filmorate.dao.user.UserRepository;
+import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmRepository;
-import ru.yandex.practicum.filmorate.storage.user.UserRepository;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,30 +25,38 @@ public class GeneralFilmService implements FilmService {
 
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
-
+    private final GenreRepository genreRepository;
+    private final MpaRepository mpaRepository;
 
     @Override
-    public Film create(Film film) {
-        return filmRepository.create(film);
+    public FilmDto getById(long id) {
+        return FilmMapper.mapToUserDto(getFilmFromRepository(id));
+
     }
 
     @Override
-    public Film update(Film film) {
-        long filmId = film.getId();
-        if (filmRepository.get(filmId).isEmpty()) {
-            throw new NotFoundException("Film not found with id: " + filmId);
+    public FilmDto create(Film film) {
+        if (isGenresValid(film) && isMpaValid(film)) {
+            return FilmMapper.mapToUserDto(filmRepository.save(film));
         }
-        return filmRepository.update(film);
+        return null;
     }
 
     @Override
-    public Film get(long filmId) {
-        return getFilmFromRepository(filmId);
+    public FilmDto update(Film film) {
+        if (isGenresValid(film) && isMpaValid(film)) {
+            long filmId = film.getId();
+            getFilmFromRepository(filmId);
+            return FilmMapper.mapToUserDto(filmRepository.update(film));
+        }
+        return null;
     }
 
     @Override
-    public List<Film> getAll() {
-        return filmRepository.getAll();
+    public List<FilmDto> getAll() {
+        return filmRepository.getAll().stream()
+                .map(FilmMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -54,22 +70,41 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film getFilmFromRepository(long filmId) {
-        return filmRepository.get(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return Optional.ofNullable(filmRepository.getById(filmId)).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
-        return userRepository.get(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        List<Film> sortedFilms = filmRepository.getLikes().entrySet().stream()
-                .sorted((entry1, entry2) -> Integer.compare(entry2.getValue().size(), entry1.getValue().size()))
-                .limit(count)
-                .map(Map.Entry::getKey)
-                .map(this::getFilmFromRepository)
+        return filmRepository.getTopPopular(count);
+    }
+
+
+    private boolean isMpaValid(Film film) {
+        Mpa filmMpa = film.getMpa();
+        if (mpaRepository.findById(filmMpa.getId()).size() != 1) {
+            throw new BadBodyRequestException("These Mpa_Ids" + filmMpa.getId() + " not contains in DATA");
+        }
+        return true;
+    }
+
+    private boolean isGenresValid(Film film) {
+        if (film.getGenres() == null) {
+            return true;
+        }
+        List<Long> filmGenreIds = film.getGenres().stream()
+                .map(g -> g.getId())
                 .toList();
 
-        return sortedFilms;
+        List<Genre> genres = genreRepository.findByIds(filmGenreIds);
+
+        if (genres.size() != filmGenreIds.size()) {
+            throw new BadBodyRequestException("These Genre_Ids " + filmGenreIds + " not contains in DATA");
+        }
+        return true;
     }
+
 }

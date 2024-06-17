@@ -1,15 +1,17 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.dao.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface FilmRepository {
 
-    Optional<Film> get(long filmId);
+    Film getById(long filmId);
 
-    Film create(Film film);
+    Film save(Film film);
 
     Film update(Film film);
 
@@ -20,4 +22,6 @@ public interface FilmRepository {
     void addLike(Film film, User user);
 
     void deleteLike(Film film, User user);
+
+    List<Film> getTopPopular(int count);
 }

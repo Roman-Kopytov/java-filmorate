@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
@@ -23,25 +24,33 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public List<Film> getAllFilms() {
+    public List<FilmDto> getAllFilms() {
         return filmService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public FilmDto getFilmById(@PathVariable("id") long id) {
+        log.info("==>GET films/{}", id);
+        FilmDto savedFilm = filmService.getById(id);
+        log.info("GET /films/{} <== {}", id, savedFilm);
+        return savedFilm;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
-    public Film create(@Valid @RequestBody Film film) {
+    public FilmDto create(@Valid @RequestBody Film film) {
         log.info("==>POST /films {}", film);
-        Film createdFilm = filmService.create(film);
+        FilmDto createdFilm = filmService.create(film);
         log.info("POST /films <== {}", createdFilm);
         return createdFilm;
     }
 
     @PutMapping
     @Validated({Update.class})
-    public Film update(@Valid @RequestBody Film film) {
+    public FilmDto update(@Valid @RequestBody Film film) {
         log.info("==>PUT /films {}", film);
-        Film updatedFilm = filmService.update(film);
+        FilmDto updatedFilm = filmService.update(film);
         log.info("PUT /films <== {}", updatedFilm);
         return updatedFilm;
     }

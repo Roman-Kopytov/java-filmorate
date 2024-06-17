@@ -1,43 +1,45 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class GeneralUserService implements UserService {
-    @Autowired
+
     private final UserRepository userRepository;
 
     @Override
-    public User create(User user) {
+    public UserDto create(User user) {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
-        return userRepository.create(user);
+        return UserMapper.mapToUserDto(userRepository.save(user));
     }
 
     @Override
-    public User update(User user) {
+    public UserDto update(User user) {
         long userId = user.getId();
-        Optional<User> savedUSer = userRepository.get(userId);
+        Optional<User> savedUSer = Optional.ofNullable(userRepository.getById(userId));
         if (savedUSer.isEmpty()) {
             throw new NotFoundException("User not found with id: " + userId);
         }
-        return userRepository.update(user);
+        return UserMapper.mapToUserDto(userRepository.update(user));
     }
 
     @Override
-    public User get(long userId) {
-        return userRepository.get(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+    public UserDto get(long userId) {
+        return UserMapper.mapToUserDto(Optional.ofNullable(userRepository.getById(userId)).orElseThrow(()
+                -> new NotFoundException("User not found with id: " + userId)));
     }
 
     @Override
@@ -51,25 +53,18 @@ public class GeneralUserService implements UserService {
     }
 
     private User getUserFromRepository(long userId) {
-        return userRepository.get(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
-    public List<User> getCommonFriends(long id, long otherId) {
-        List<User> userFriends = getFriendsFromRepository(id);
-        List<User> otherUserFriends = getFriendsFromRepository(otherId);
-        List<User> commonFriends = new ArrayList<>();
-        for (User user : userFriends) {
-            if (otherUserFriends.contains(user)) {
-                commonFriends.add(user);
-            }
-        }
-        return commonFriends;
+    public List<UserDto> getCommonFriends(long id, long otherId) {
+        List<User> commonFriends = userRepository.getCommonFriends(getUserFromRepository(id), getUserFromRepository(otherId));
+        return commonFriends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     @Override
-    public List<User> getUserFriends(long id) {
-        return getFriendsFromRepository(id);
+    public List<UserDto> getUserFriends(long id) {
+        return getFriendsFromRepository(id).stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     private List<User> getFriendsFromRepository(long id) {
@@ -77,7 +72,10 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<User> getAll() {
-        return userRepository.getAll();
+    public List<UserDto> getAll() {
+        return userRepository.getAll()
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 }

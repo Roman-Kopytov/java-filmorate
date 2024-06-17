@@ -25,7 +25,7 @@ public class FilmTest {
         Film film = new Film();
         film.setName(" ");
         film.setDescription("Test");
-        film.setDuration(1);
+        film.setDuration(1L);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Violation not found");
@@ -46,7 +46,7 @@ public class FilmTest {
                 "!\\zv.;A1rD<1WpisWR^K\n" +
                 "HE#SBbv('tNP3J%3?}@.\n" +
                 "_79eJnsY*S:NuC,*kuWG");
-        film.setDuration(1);
+        film.setDuration(1L);
 
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
@@ -59,7 +59,7 @@ public class FilmTest {
         film.setName("TestName");
         film.setDescription("Test");
         film.setReleaseDate(LocalDate.of(1500, 10, 10));
-        film.setDuration(1);
+        film.setDuration(1L);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Violation not found");
@@ -70,7 +70,7 @@ public class FilmTest {
         Film film = new Film();
         film.setName("TestName");
         film.setDescription("Test");
-        film.setDuration(-1);
+        film.setDuration(-1L);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Violation not found");
