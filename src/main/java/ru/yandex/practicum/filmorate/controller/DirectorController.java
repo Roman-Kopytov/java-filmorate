@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.director.DirectorService;
 
@@ -52,8 +51,9 @@ public class DirectorController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteDirector(@Positive @PathVariable long id) {
+    public String delete(@Positive @PathVariable long id) {
         log.info("==>DELETE /directors/{}", id);
-        return service.delete(id);
+        service.delete(id);
+        return "Режиссер был удален";
     }
 }
