@@ -62,10 +62,10 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
-    @GetMapping("/films/director/{directorId}")
+    @GetMapping("director/{directorId}")
     public List<Film> getSortedFilmsByDirector(@PathVariable long directorId, @RequestParam String sortBy) {
         log.info("==>GET //films/director/{directorId");
-        return filmService.getSortedFilmsByDirector(sortBy);
+        return filmService.getSortedFilmsByDirector(directorId, sortBy);
     }
 
     @PutMapping("/{filmId}/like/{userId}")

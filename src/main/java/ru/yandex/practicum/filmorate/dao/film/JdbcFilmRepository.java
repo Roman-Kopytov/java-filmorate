@@ -218,8 +218,40 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public List<Film> getSortedFilmsByDirector(String sortBy) {
-        // TODO
-        return getAll();
+    public List<Film> getSortedFilmsByDirector(long directorId, String sortBy) {
+        final List<Genre> genres = getAllGenres();
+        final List<Director> directors = getAllDirectors();
+
+        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
+        final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
+        if (sortBy.equals("likes")) {
+            final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+                            "FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID " +
+                            "FROM FILMS " +
+                            "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
+                            "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
+                            "LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID " +
+                            "WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId " +
+                            "GROUP BY FILMS.FILM_ID " +
+                            "ORDER BY COUNT(LIKES.USER_ID) desc", Map.of("directorId", directorId), new FilmRowMapper());
+
+            films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
+            films.forEach(film -> film.setDirector(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+            return films;
+        } else {
+            final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+                    "FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID " +
+                    "FROM FILMS " +
+                    "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
+                    "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
+                    "LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID " +
+                    "WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId " +
+                    "GROUP BY FILMS.FILM_ID " +
+                    "ORDER BY FILMS.RELEASE_DATE desc", Map.of("directorId", directorId), new FilmRowMapper());
+
+            films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
+            films.forEach(film -> film.setDirector(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+            return films;
+        }
     }
 }
