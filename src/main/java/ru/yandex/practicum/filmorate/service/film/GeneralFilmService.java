@@ -117,12 +117,12 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public LinkedHashSet<Genre> getAllGenresByFilmId(int filmId) {
-        String sqlQuery = "SELECT fg.GENRE_ID AS id, g.NAME AS name \n " +
-                "FROM FILM_GENRES AS fg\n" +
-                "INNER JOIN GENRES AS g ON fg.GENRE_ID  = g.ID\n" +
+        String sqlQuery = "SELECT fg.GENRE_ID AS id, g.NAME AS name \n" +
+                "FROM FILMS_GENRES AS fg\n" +
+                "INNER JOIN GENRES AS g ON fg.GENRE_ID = g.GENRE_ID\n" +
                 "WHERE fg.FILM_ID = ?\n" +
                 "ORDER BY fg.GENRE_ID;";
-        return new LinkedHashSet<>((jdbcTemplate.query(sqlQuery, this::mapRowToGenre, filmId)));
+        return new LinkedHashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToGenre, filmId));
     }
 
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
