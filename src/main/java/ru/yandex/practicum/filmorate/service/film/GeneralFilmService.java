@@ -75,16 +75,17 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
-        String sqlQuery = " SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION," +
-                "f.MPA_ID, m.NAME AS mpa_name" +
-                " FROM films AS f " +
-                "JOIN MPA AS m ON m.ID = f.MPA_ID " +
-                "JOIN FILM_LIKES AS l ON f.ID = l.FILM_ID " +
-                "JOIN FILM_LIKES AS lf ON l.FILM_ID = lf.FILM_ID " +
-                "WHERE l.USER_ID = ? and lf.USER_ID = ?";
+        String sqlQuery = " SELECT f.FILM_ID AS id, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
+                "f.MPA_ID, m.NAME AS mpa_name " +
+                "FROM FILMS AS f " +
+                "JOIN MPA AS m ON m.MPA_ID = f.MPA_ID " +
+                "JOIN LIKES AS l ON f.FILM_ID = l.FILM_ID " +
+                "JOIN LIKES AS lf ON f.FILM_ID = lf.FILM_ID " +
+                "WHERE l.USER_ID = ? AND lf.USER_ID = ? " +
+                "GROUP BY f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME " +
+                "ORDER BY f.NAME";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilmWithGenres, userId, friendId);
-
     }
 
     private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
