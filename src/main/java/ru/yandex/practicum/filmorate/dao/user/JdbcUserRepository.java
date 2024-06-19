@@ -93,7 +93,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public List<Like> getMapUserLikeFilm() {
-        String query = "SELECT * FROM likes";
+        final String query = "SELECT * FROM likes";
         return jdbcOperations.query(query, likesRowMapper);
     }
 

@@ -85,7 +85,7 @@ public class GeneralUserService implements UserService {
     }
 
     private static List<Long> getLongs(List<Like> likesList, List<Long> idFilms, Long id) {
-        List<Long> similarUser = new ArrayList<>();
+        final List<Long> similarUser = new ArrayList<>();
         for (Like like : likesList) {
             if (like.getUserId().equals(id)) {
                 continue;
@@ -100,7 +100,7 @@ public class GeneralUserService implements UserService {
             }
         }
 
-        List<Long> listLongFilms = new ArrayList<>();
+        final List<Long> listLongFilms = new ArrayList<>();
         for (Like like : likesList) {
             if (like.getUserId().equals(id)) {
                 continue;
@@ -118,9 +118,9 @@ public class GeneralUserService implements UserService {
 
     @Override
     public List<Film> getRecommendations(Long id) {
-        List<Like> likesList = userRepository.getMapUserLikeFilm();
-        List<Film> filmList = filmRepository.getAll();
-        List<Long> idFilms = new ArrayList<>();
+        final List<Like> likesList = userRepository.getMapUserLikeFilm();
+        final List<Film> filmList = filmRepository.getAll();
+        final List<Long> idFilms = new ArrayList<>();
         for (Like l : likesList) {
             if (l.getUserId().equals(id)) {
                 idFilms.add(l.getFilmId());
@@ -128,7 +128,7 @@ public class GeneralUserService implements UserService {
         }
         final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
 
-        List<Film> recommendedFilms = new ArrayList<>();
+        final List<Film> recommendedFilms = new ArrayList<>();
         for (Long l : listLongFilms) {
             for (Film f : filmList) {
                 if (f.getId().equals(l)) {
