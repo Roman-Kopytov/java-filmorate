@@ -82,6 +82,10 @@ public class GeneralFilmService implements FilmService {
         return filmRepository.getTopPopular(count);
     }
 
+    @Override
+    public List<Film> getSortedFilmsByDirector(long directorId, String sortBy) {
+        return filmRepository.getSortedFilmsByDirector(directorId, sortBy);
+    }
 
     private boolean isMpaValid(Film film) {
         Mpa filmMpa = film.getMpa();

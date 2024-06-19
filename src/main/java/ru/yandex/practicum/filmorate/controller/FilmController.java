@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -61,6 +62,12 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
+    @GetMapping("/films/director/{directorId}")
+    public List<Film> getSortedFilmsByDirector(@PathVariable long directorId, @RequestParam String sortBy) {
+        log.info("==>GET //films/director/{directorId");
+        return filmService.getSortedFilmsByDirector(sortBy);
+    }
+
     @PutMapping("/{filmId}/like/{userId}")
     public void addLike(@PathVariable("filmId") @Min(0) long filmId, @PathVariable("userId") @Min(0) long userId) {
         log.info("==>PUT /films/{}/like/{}", filmId, userId);
@@ -72,6 +79,4 @@ public class FilmController {
         log.info("==>DELETE /films/{}/like/{}", filmId, userId);
         filmService.deleteLike(userId, filmId);
     }
-
-
 }

@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Slf4j
@@ -35,10 +36,10 @@ public class JdbcDirectorRepository implements DirectorRepository {
 
     public Director create(Director director) {
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbc).withTableName("DIRECTORS").usingGeneratedKeyColumns("DIRECTOR_ID");
-        long id = insert.executeAndReturnKey(director.toMap()).longValue();
+        long id = insert.executeAndReturnKey(Map.of("name", director.getName())).longValue();
 
         log.info("Создан новый режиссер с id {}", id);
-        return Director.builder().id(id).name(director.getName()).build();
+        return new Director(id, director.getName());
     }
 
     public Director update(Director director) {

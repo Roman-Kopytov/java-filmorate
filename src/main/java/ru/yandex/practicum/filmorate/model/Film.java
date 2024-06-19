@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 /**
@@ -42,8 +43,7 @@ public class Film {
     @NotNull
     private Mpa mpa;
 
-    @NotNull
-    private Director director;
+    private HashSet<Director> director;
 
     @AssertTrue
     public boolean isReleaseDateValid() {
