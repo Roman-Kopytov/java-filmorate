@@ -109,6 +109,7 @@ public class GeneralFilmService implements FilmService {
         String sqlQuery = "SELECT * FROM mpa WHERE id = ?";
         return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilmMpa, id);
     }
+
     private Mpa mapRowToFilmMpa(ResultSet rs, int rowNum) throws SQLException {
         Mpa filmMpa = new Mpa(rs.getInt("id"),rs.getString("name"));
         return filmMpa;
@@ -125,10 +126,8 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getLong("id"),rs.getString("name"));
+        return new Genre(rs.getLong("id"), rs.getString("name"));
     }
-
-
 
     private Film getFilmFromRepository(long filmId) {
         return Optional.ofNullable(filmRepository.getById(filmId)).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
