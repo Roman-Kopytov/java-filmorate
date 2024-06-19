@@ -81,15 +81,25 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
         List<Film> filmList = filmRepository.getTopPopular(count);
-        if(genreId == null || year == null) {
+        if (genreId == null && year == null) {
             return filmList;
         }
         List<Film> newListFilm = new ArrayList<>();
         for (Film film : filmList) {
-            for (Genre genre : film.getGenres()) {
-                if (genre.getId() == genreId) {
-                    if (film.getReleaseDate().getYear() == year) {
-                        newListFilm.add(film);
+            if (genreId == null) {
+                if (film.getReleaseDate().getYear() == year) {
+                    newListFilm.add(film);
+                }
+            } else {
+                for (Genre genre : film.getGenres()) {
+                    if (genre.getId() == genreId) {
+                        if (year == null) {
+                            newListFilm.add(film);
+                        } else {
+                            if (film.getReleaseDate().getYear() == year) {
+                                newListFilm.add(film);
+                            }
+                        }
                     }
                 }
             }
