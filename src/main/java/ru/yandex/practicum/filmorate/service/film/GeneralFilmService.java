@@ -107,13 +107,12 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public Mpa getMpaById(int id) {
-        String sqlQuery = "SELECT * FROM mpa WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilmMpa, id);
+        String sqlQuery = "SELECT MPA_ID, NAME FROM MPA WHERE MPA_ID = ?";
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, id);
     }
 
-    private Mpa mapRowToFilmMpa(ResultSet rs, int rowNum) throws SQLException {
-        Mpa filmMpa = new Mpa(rs.getInt("id"),rs.getString("name"));
-        return filmMpa;
+    private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
+        return new Mpa(rs.getInt("MPA_ID"), rs.getString("NAME"));
     }
 
     @Override
