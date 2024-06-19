@@ -23,4 +23,6 @@ public interface FilmService {
 
 
     FilmDto getById(long id);
+
+    List<FilmDto> searchBy(String query, String by);
 }

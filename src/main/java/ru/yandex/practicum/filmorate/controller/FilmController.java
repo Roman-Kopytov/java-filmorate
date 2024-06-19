@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.pathHandler.SearchParameters;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
@@ -55,6 +56,14 @@ public class FilmController {
         return updatedFilm;
     }
 
+    @GetMapping("/search")
+    @Validated
+    public List<FilmDto> searchBy(@RequestParam(name = "query", required = true) String query,
+                                  @RequestParam(name = "by", defaultValue = "director,title") String by) {
+        log.info("==>GET /search?query={}&by={}", query, by);
+        return filmService.searchBy(query, SearchParameters.by(by));
+    }
+
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
         log.info("==>GET /popular?count={}", count);
@@ -72,6 +81,4 @@ public class FilmController {
         log.info("==>DELETE /films/{}/like/{}", filmId, userId);
         filmService.deleteLike(userId, filmId);
     }
-
-
 }

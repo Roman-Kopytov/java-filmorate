@@ -159,4 +159,46 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         return films;
     }
+
+    @Override
+    public List<Film> searchByTitle(String query, String by) {
+        String newQuery = "%" + query + "%";
+        return jdbcOperations.query("""
+                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME, DIRECTOR.NAME
+                FROM FILMS
+                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                LEFT JOIN DIRECTOR on FILMS.DIRECTOR_ID = DIRECTOR.DIRECTOR_ID
+                WHERE FILMS.NAME LIKE :newQuery
+                GROUP BY FILMS.FILM_ID
+                LIMIT :count
+                """, Map.of("newQuery", newQuery), new FilmRowMapper());
+    }
+
+    @Override
+    public List<Film> searchByDirector(String query, String by) {
+        String newQuery = "%" + query + "%";
+        return jdbcOperations.query("""
+                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME,DIRECTOR.NAME
+                FROM FILMS
+                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                LEFT JOIN DIRECTOR on FILMS.DIRECTOR_ID = DIRECTOR.DIRECTOR_ID
+                WHERE DIRECTOR.NAME LIKE :newQuery
+                GROUP BY FILMS.FILM_ID
+                LIMIT :count
+                """, Map.of("newQuery", newQuery), new FilmRowMapper());
+    }
+
+    @Override
+    public List<Film> searchByDirectorAndTitle(String query, String by) {
+        String newQuery = "%" + query + "%";
+        return jdbcOperations.query("""
+                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME,DIRECTOR.NAME
+                FROM FILMS
+                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                LEFT JOIN DIRECTOR on FILMS.DIRECTOR_ID = DIRECTOR.DIRECTOR_ID
+                WHERE DIRECTOR.NAME LIKE :newQuery && FILMS.NAME LIKE :newQuery
+                GROUP BY FILMS.FILM_ID
+                LIMIT :count
+                """, Map.of("newQuery", newQuery), new FilmRowMapper());
+    }
 }

@@ -35,6 +35,27 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
+    public List<FilmDto> searchBy(String query, String by) {
+        switch (by) {
+            case "title":
+                return filmRepository.searchByTitle(query, by).stream()
+                        .map(FilmMapper::mapToUserDto)
+                        .collect(Collectors.toList());
+            case "director":
+                return filmRepository.searchByDirector(query, by).stream()
+                        .map(FilmMapper::mapToUserDto)
+                        .collect(Collectors.toList());
+            case "director,title":
+                return filmRepository.searchByDirectorAndTitle(query, by).stream()
+                        .map(FilmMapper::mapToUserDto)
+                        .collect(Collectors.toList());
+            default:
+                return null;
+        }
+    }
+
+
+    @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
             return FilmMapper.mapToUserDto(filmRepository.save(film));
