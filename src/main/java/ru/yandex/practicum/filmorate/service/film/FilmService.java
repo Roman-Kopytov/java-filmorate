@@ -21,6 +21,5 @@ public interface FilmService {
 
     List<Film> getPopularFilms(int count);
 
-
     FilmDto getById(long id);
 }
