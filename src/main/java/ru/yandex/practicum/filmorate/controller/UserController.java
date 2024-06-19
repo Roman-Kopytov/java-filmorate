@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -31,6 +32,11 @@ public class UserController {
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable int id) {
         return userService.get(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
     }
 
     @PostMapping

@@ -3,11 +3,15 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 public class GeneralUserService implements UserService {
 
     private final UserRepository userRepository;
+    private final FilmRepository filmRepository;
 
     @Override
     public UserDto create(User user) {
@@ -77,5 +82,62 @@ public class GeneralUserService implements UserService {
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
+    }
+
+    private static List<Long> getLongs(List<Like> likesList, List<Long> idFilms, Long id) {
+        List<Long> similarUser = new ArrayList<>();
+        for (Like like : likesList) {
+            if (like.getUserId().equals(id)) {
+                continue;
+            }
+            for (Long l : idFilms) {
+                if (similarUser.contains(like.getUserId())) {
+                    continue;
+                }
+                if (l.equals(like.getFilmId())) {
+                    similarUser.add(like.getUserId());
+                }
+            }
+        }
+
+        List<Long> listLongFilms = new ArrayList<>();
+        for (Like like : likesList) {
+            if (like.getUserId().equals(id)) {
+                continue;
+            }
+            for (Long l : similarUser) {
+                if (l.equals(like.getUserId())) {
+                    if (!idFilms.contains(like.getFilmId())) {
+                        listLongFilms.add(like.getFilmId());
+                    }
+                }
+            }
+        }
+        return listLongFilms;
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long id) {
+        List<Like> likesList = userRepository.getMapUserLikeFilm();
+        List<Film> filmList = filmRepository.getAll();
+        List<Long> idFilms = new ArrayList<>();
+        for (Like l : likesList) {
+            if (l.getUserId().equals(id)) {
+                idFilms.add(l.getFilmId());
+            }
+        }
+        final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
+
+        List<Film> recommendedFilms = new ArrayList<>();
+        for (Long l : listLongFilms) {
+            for (Film f : filmList) {
+                if (f.getId().equals(l)) {
+                    if (!recommendedFilms.contains(f))
+                        recommendedFilms.add(f);
+                }
+            }
+        }
+
+        return recommendedFilms;
     }
 }

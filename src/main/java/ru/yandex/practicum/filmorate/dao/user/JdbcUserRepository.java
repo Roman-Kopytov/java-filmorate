@@ -5,7 +5,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class JdbcUserRepository implements UserRepository {
 
     private final NamedParameterJdbcOperations jdbcOperations;
     private final UserRowMapper userRowMapper;
+    private final LikesRowMapper likesRowMapper;
 
     @Override
     public User getById(long userId) {
@@ -86,6 +89,12 @@ public class JdbcUserRepository implements UserRepository {
     public void deleteFriend(User user, User friend) {
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
+    }
+
+    @Override
+    public List<Like> getMapUserLikeFilm() {
+        String query = "SELECT * FROM likes";
+        return jdbcOperations.query(query, likesRowMapper);
     }
 
 }
