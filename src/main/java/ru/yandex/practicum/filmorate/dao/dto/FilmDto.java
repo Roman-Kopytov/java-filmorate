@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
@@ -18,5 +19,5 @@ public class FilmDto {
     private Long duration;
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
-
+    private Director director;
 }

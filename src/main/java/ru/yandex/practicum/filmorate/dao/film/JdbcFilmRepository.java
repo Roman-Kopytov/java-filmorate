@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -20,15 +21,19 @@ import java.util.*;
 public class JdbcFilmRepository implements FilmRepository {
 
     private final NamedParameterJdbcOperations jdbcOperations;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Film getById(long filmId) {
         return jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE, " +
-                        "FILMS.DURATION, MPA.MPA_ID,MPA.NAME, GENRES.GENRE_ID, GENRES.NAME   " +
+                        "FILMS.DURATION, MPA.MPA_ID, MPA.NAME, " +
+                        "DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME    " +
                         "FROM FILMS " +
                         "join MPA on FILMS.MPA_ID = MPA.MPA_ID " +
                         "left join FILMS_GENRES on FILMS.FILM_ID = FILMS_GENRES.FILM_ID " +
-                        "left join GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID WHERE FILMS.film_id = :filmId",
+                        "left join GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID " +
+                        "join DIRECTORS on FILMS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID " +
+                        "WHERE FILMS.film_id = :filmId",
                 Map.of("filmId", filmId), new FilmExtractor());
     }
 
@@ -40,11 +45,12 @@ public class JdbcFilmRepository implements FilmRepository {
                 "description", film.getDescription(),
                 "releaseDate", film.getReleaseDate(),
                 "duration", film.getDuration(),
-                "MPA_ID", film.getMpa().getId());
+                "MPA_ID", film.getMpa().getId(),
+                "DIRECTOR_ID", film.getDirector().getId());
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
-        jdbcOperations.update("INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)" +
-                        " VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)",
+        jdbcOperations.update("INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID,DIRECTOR_ID)" +
+                        " VALUES(:name,:description,:releaseDate,:duration,:MPA_ID,:DIRECTOR_ID)",
                 params, keyHolder, new String[]{"film_id"});
 
         film.setId(keyHolder.getKeyAs(Long.class));
@@ -81,11 +87,13 @@ public class JdbcFilmRepository implements FilmRepository {
                 "description", film.getDescription(),
                 "releaseDate", film.getReleaseDate(),
                 "duration", film.getDuration(),
-                "MPA_ID", film.getMpa().getId());
+                "MPA_ID", film.getMpa().getId(),
+                "DIRECTOR_ID", film.getDirector().getId());
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
         jdbcOperations.update("UPDATE FILMS " +
-                " SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID " +
+                " SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID," +
+                "DIRECTOR_ID=:DIRECTOR_ID " +
                 "WHERE FILM_ID=:filmId", params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
@@ -96,7 +104,8 @@ public class JdbcFilmRepository implements FilmRepository {
     public List<Film> getAll() {
         final List<Genre> genres = getAllGenres();
         final List<Film> films = jdbcOperations.query("SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
-                "FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID", new FilmRowMapper());
+                "FILMS.MPA_ID, MPA.NAME, FILMS.DIRECTOR_ID, DIRECTORS.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
+                "JOIN DIRECTORS on FILMS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID", new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
 
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
@@ -146,9 +155,10 @@ public class JdbcFilmRepository implements FilmRepository {
     public List<Film> getTopPopular(int count) {
         final List<Genre> genres = getAllGenres();
         final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
-                        "FILMS.MPA_ID, MPA.NAME " +
+                        "FILMS.MPA_ID, MPA.NAME, FILMS.DIRECTOR_ID, DIRECTORS.NAME " +
                         "FROM FILMS " +
                         "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
+                        "JOIN PUBLIC.DIRECTORS on FILMS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID " +
                         "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
                         "GROUP BY FILMS.FILM_ID " +
                         "ORDER BY COUNT(LIKES.USER_ID) desc " +

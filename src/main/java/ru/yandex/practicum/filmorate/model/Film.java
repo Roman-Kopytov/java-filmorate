@@ -20,21 +20,30 @@ import java.util.LinkedHashSet;
 public class Film {
 
     private static final LocalDate START_FILM_DATA = LocalDate.of(1895, 12, 28);
+
     @NotNull(groups = Update.class)
     private Long id;
+
     @NotBlank
     private String name;
+
     @NotBlank
     @Size(max = 200)
     private String description;
+
     private LocalDate releaseDate;
+
     @Positive
     @NotNull
     private Long duration;
 
     private LinkedHashSet<Genre> genres;
+
     @NotNull
     private Mpa mpa;
+
+    @NotNull
+    private Director director;
 
     @AssertTrue
     public boolean isReleaseDateValid() {
