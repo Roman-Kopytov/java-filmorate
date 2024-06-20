@@ -20,5 +20,5 @@ public class FilmDto {
     private Long duration;
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
-    private HashSet<Director> director;
+    private HashSet<Director> directors;
 }

@@ -31,7 +31,8 @@ public class JdbcDirectorRepository implements DirectorRepository {
         return jdbc.query("SELECT * FROM DIRECTORS", directorRowMapper);
     }
 
-    public Director getById(long id) {
+    public Director getById(long id) throws NotFoundException {
+        // TODO error handling
         log.info("Выполняется возврат режиссера с id {} из БД", id);
         try {
             return jdbc.queryForObject("SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?", directorRowMapper, id);
@@ -49,7 +50,8 @@ public class JdbcDirectorRepository implements DirectorRepository {
         return new Director(id, director.getName());
     }
 
-    public Director update(Director director) {
+    public Director update(Director director) throws BadBodyRequestException {
+        //TODO error handling
         int rowsUpdated = jdbc.update("UPDATE DIRECTORS SET NAME = ? WHERE DIRECTOR_ID = ?",
                 director.getName(), director.getId());
         if (rowsUpdated == 0) {

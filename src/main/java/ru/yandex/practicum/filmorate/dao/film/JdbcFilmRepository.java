@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.dao.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.GenreRowMapper;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -84,11 +86,11 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     private void saveFilmDirectors(Film film) {
-        if (film.getDirector() == null || film.getDirector().isEmpty()) {
-            film.setDirector(null);
+        if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
+            film.setDirectors(null);
             return;
         }
-        var batchValue = film.getDirector().stream()
+        var batchValue = film.getDirectors().stream()
                 .map(director -> new MapSqlParameterSource()
                         .addValue("film_id", film.getId())
                         .addValue("director_id", director.getId()))
@@ -133,7 +135,7 @@ public class JdbcFilmRepository implements FilmRepository {
         final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
 
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-        films.forEach(film -> film.setDirector(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         return films;
     }
 
@@ -213,7 +215,7 @@ public class JdbcFilmRepository implements FilmRepository {
         final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
 
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-        films.forEach(film -> film.setDirector(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         return films;
     }
 
@@ -236,7 +238,7 @@ public class JdbcFilmRepository implements FilmRepository {
                             "ORDER BY COUNT(LIKES.USER_ID) desc", Map.of("directorId", directorId), new FilmRowMapper());
 
             films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-            films.forEach(film -> film.setDirector(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+            films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
             return films;
         } else {
             final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
@@ -247,10 +249,10 @@ public class JdbcFilmRepository implements FilmRepository {
                     "LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID " +
                     "WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId " +
                     "GROUP BY FILMS.FILM_ID " +
-                    "ORDER BY FILMS.RELEASE_DATE desc", Map.of("directorId", directorId), new FilmRowMapper());
+                    "ORDER BY FILMS.RELEASE_DATE asc", Map.of("directorId", directorId), new FilmRowMapper());
 
             films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-            films.forEach(film -> film.setDirector(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+            films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
             return films;
         }
     }

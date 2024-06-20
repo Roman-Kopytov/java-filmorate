@@ -42,7 +42,7 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
         }
 
         film.setGenres(genresSet);
-        film.setDirector(directors);
+        film.setDirectors(directors);
         return film;
     }
 }

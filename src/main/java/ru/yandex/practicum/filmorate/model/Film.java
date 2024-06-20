@@ -43,7 +43,7 @@ public class Film {
     @NotNull
     private Mpa mpa;
 
-    private HashSet<Director> director;
+    private HashSet<Director> directors;
 
     @AssertTrue
     public boolean isReleaseDateValid() {
