@@ -4,9 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.director.JdbcDirectorRepository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -24,6 +26,11 @@ public class DirectorService {
     }
 
     public Director getById(long id) {
+        Optional<Director> director = Optional.ofNullable(storage.getById(id));
+        if (director.isEmpty()) {
+            throw new NotFoundException("Director not found with id: " + id);
+        }
+
         return storage.getById(id);
     }
 
@@ -32,7 +39,8 @@ public class DirectorService {
     }
 
     public Director update(Director director) {
-        return storage.update(director);
+        Director newDirector = storage.update(director);
+        return newDirector;
     }
 
     public void delete(long id) {
