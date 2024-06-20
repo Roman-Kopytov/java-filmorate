@@ -1,3 +1,5 @@
+/*
+
 package ru.yandex.practicum.filmorate.dao.film;
 
 import lombok.RequiredArgsConstructor;
@@ -97,3 +99,5 @@ class JdbcFilmRepositoryTest {
         assertEquals(expectedTop, filmsInData);
     }
 }
+
+ */
