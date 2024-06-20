@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
@@ -84,6 +86,34 @@ public class GeneralUserService implements UserService {
                 .collect(Collectors.toList());
     }
 
+    private static List<FilmDto> getFilmDtos(List<Long> listLongFilms, List<Film> filmList) {
+        final List<FilmDto> recommendedFilms = new ArrayList<>();
+        for (Long l : listLongFilms) {
+            for (Film f : filmList) {
+                if (f.getId().equals(l)) {
+                    FilmDto filmDto = FilmMapper.mapToUserDto(f);
+                    if (!recommendedFilms.contains(filmDto))
+                        recommendedFilms.add(filmDto);
+                }
+            }
+        }
+        return recommendedFilms;
+    }
+
+    @Override
+    public List<FilmDto> getRecommendations(Long id) {
+        final List<Like> likesList = userRepository.getMapUserLikeFilm();
+        final List<Film> filmList = filmRepository.getAll();
+        final List<Long> idFilms = new ArrayList<>();
+        for (Like l : likesList) {
+            if (l.getUserId().equals(id)) {
+                idFilms.add(l.getFilmId());
+            }
+        }
+        final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
+        return getFilmDtos(listLongFilms, filmList);
+    }
+
     private static List<Long> getLongs(List<Like> likesList, List<Long> idFilms, Long id) {
         final List<Long> similarUser = new ArrayList<>();
         for (Like like : likesList) {
@@ -114,30 +144,5 @@ public class GeneralUserService implements UserService {
             }
         }
         return listLongFilms;
-    }
-
-    @Override
-    public List<Film> getRecommendations(Long id) {
-        final List<Like> likesList = userRepository.getMapUserLikeFilm();
-        final List<Film> filmList = filmRepository.getAll();
-        final List<Long> idFilms = new ArrayList<>();
-        for (Like l : likesList) {
-            if (l.getUserId().equals(id)) {
-                idFilms.add(l.getFilmId());
-            }
-        }
-        final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
-
-        final List<Film> recommendedFilms = new ArrayList<>();
-        for (Long l : listLongFilms) {
-            for (Film f : filmList) {
-                if (f.getId().equals(l)) {
-                    if (!recommendedFilms.contains(f))
-                        recommendedFilms.add(f);
-                }
-            }
-        }
-
-        return recommendedFilms;
     }
 }

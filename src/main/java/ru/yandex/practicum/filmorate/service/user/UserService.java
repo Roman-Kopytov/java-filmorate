@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -26,5 +26,5 @@ public interface UserService {
 
     List<UserDto> getAll();
 
-    List<Film> getRecommendations(Long id);
+    List<FilmDto> getRecommendations(Long id);
 }
