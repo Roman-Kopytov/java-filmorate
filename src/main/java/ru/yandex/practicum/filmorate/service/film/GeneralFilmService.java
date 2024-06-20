@@ -79,33 +79,15 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
-        List<Film> filmList = filmRepository.getTopPopular(count);
-        if (genreId == null && year == null) {
-            return filmList;
-        }
-        List<Film> newListFilm = new ArrayList<>();
+    public List<FilmDto> getPopularFilms(int count, Long genreId, Integer year) {
+        List<FilmDto> newListFilm = new ArrayList<>();
+        List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
         for (Film film : filmList) {
-            if (genreId == null) {
-                if (film.getReleaseDate().getYear() == year) {
-                    newListFilm.add(film);
-                }
-            } else {
-                for (Genre genre : film.getGenres()) {
-                    if (genre.getId() == genreId) {
-                        if (year == null) {
-                            newListFilm.add(film);
-                        } else {
-                            if (film.getReleaseDate().getYear() == year) {
-                                newListFilm.add(film);
-                            }
-                        }
-                    }
-                }
-            }
+            newListFilm.add(FilmMapper.mapToUserDto(film));
         }
         return newListFilm;
     }
+
 
     private boolean isMpaValid(Film film) {
         Mpa filmMpa = film.getMpa();

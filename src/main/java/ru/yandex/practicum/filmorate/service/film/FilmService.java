@@ -21,5 +21,5 @@ public interface FilmService {
 
     FilmDto getById(long id);
 
-    List<Film> getPopularFilms(int count, Long genreId, Integer year);
+    List<FilmDto> getPopularFilms(int count, Long genreId, Integer year);
 }
