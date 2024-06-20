@@ -2,11 +2,13 @@ package ru.yandex.practicum.filmorate.dao.director;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
@@ -31,7 +33,12 @@ public class JdbcDirectorRepository implements DirectorRepository {
 
     public Director getById(long id) {
         log.info("Выполняется возврат режиссера с id {} из БД", id);
-        return jdbc.queryForObject("SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?", directorRowMapper, id);
+        try {
+            return jdbc.queryForObject("SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?", directorRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Пользователь попытался получить информацию о несуществующим режиссере с id {}", id);
+            throw new NotFoundException(String.format("Режиссера с id %l еще нет", id));
+        }
     }
 
     public Director create(Director director) {
