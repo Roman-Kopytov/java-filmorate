@@ -3,12 +3,14 @@ package ru.yandex.practicum.filmorate.dao.mappers;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 @Component
@@ -20,6 +22,7 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             return null;
         }
         LinkedHashSet<Genre> genresSet = new LinkedHashSet<>();
+        HashSet<Director> directors = new HashSet<>();
         Film film = new Film();
         while (rs.next()) {
             film.setId(rs.getLong("FILM_ID"));
@@ -32,9 +35,14 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             if (!rs.wasNull()) {
                 genresSet.add(new Genre(genreId, rs.getString("GENRES.NAME")));
             }
+            Long directorId = rs.getLong("DIRECTORS.DIRECTOR_ID");
+            if (!rs.wasNull()) {
+                directors.add(new Director(directorId, rs.getString("DIRECTORS.NAME")));
+            }
         }
 
         film.setGenres(genresSet);
+        film.setDirectors(directors);
         return film;
     }
 }

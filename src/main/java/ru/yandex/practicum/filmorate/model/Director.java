@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
-public class Genre {
+@AllArgsConstructor
+public class Director {
     private final Long id;
-    private final String name;
-
+    private String name;
 }
