@@ -83,8 +83,12 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public List<Film> getSortedFilmsByDirector(long directorId, String sortBy) {
-        return filmRepository.getSortedFilmsByDirector(directorId, sortBy);
+    public List<FilmDto> getSortedFilmsByDirector(long directorId, String sortBy) {
+        List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
+        List<FilmDto> dtos = films.stream()
+                .map(film -> FilmMapper.mapToUserDto(film))
+                .collect(Collectors.toList());
+        return dtos;
     }
 
     private boolean isMpaValid(Film film) {

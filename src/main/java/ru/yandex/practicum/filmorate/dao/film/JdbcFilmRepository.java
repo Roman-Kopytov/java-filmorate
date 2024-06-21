@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -23,20 +22,22 @@ import java.util.*;
 public class JdbcFilmRepository implements FilmRepository {
 
     private final NamedParameterJdbcOperations jdbcOperations;
-    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Film getById(long filmId) {
-        return jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE, " +
-                        "FILMS.DURATION, MPA.MPA_ID, MPA.NAME, " +
-                        "DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME    " +
-                        "FROM FILMS " +
-                        "join MPA on FILMS.MPA_ID = MPA.MPA_ID " +
-                        "left join FILMS_GENRES on FILMS.FILM_ID = FILMS_GENRES.FILM_ID " +
-                        "left join GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID " +
-                        "left join FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID " +
-                        "left join DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID " +
-                        "WHERE FILMS.film_id = :filmId",
+        return jdbcOperations.query(
+                    """
+                        SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE,
+                        FILMS.DURATION, MPA.MPA_ID, MPA.NAME,
+                        DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME
+                        FROM FILMS
+                        join MPA on FILMS.MPA_ID = MPA.MPA_ID
+                        left join FILMS_GENRES on FILMS.FILM_ID = FILMS_GENRES.FILM_ID
+                        left join GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID
+                        left join FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
+                        left join DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID
+                        WHERE FILMS.film_id = :filmId
+                        """,
                 Map.of("filmId", filmId), new FilmExtractor());
     }
 
@@ -51,8 +52,11 @@ public class JdbcFilmRepository implements FilmRepository {
                 "MPA_ID", film.getMpa().getId());
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
-        jdbcOperations.update("INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)" +
-                        " VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)",
+        jdbcOperations.update(
+                    """
+                        INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)
+                        VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)
+                        """,
                 params, keyHolder, new String[]{"film_id"});
 
         film.setId(keyHolder.getKeyAs(Long.class));
@@ -113,9 +117,12 @@ public class JdbcFilmRepository implements FilmRepository {
                 "MPA_ID", film.getMpa().getId());
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
-        jdbcOperations.update("UPDATE FILMS " +
-                " SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID " +
-                "WHERE FILM_ID=:filmId", params);
+        jdbcOperations.update(
+                """
+                UPDATE FILMS
+                SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
+                WHERE FILM_ID=:filmId
+                """, params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
         cleanFilmDirectors(film);
@@ -127,8 +134,11 @@ public class JdbcFilmRepository implements FilmRepository {
     public List<Film> getAll() {
         final List<Genre> genres = getAllGenres();
         final List<Director> directors = getAllDirectors();
-        final List<Film> films = jdbcOperations.query("SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
-                "FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID", new FilmRowMapper());
+        final List<Film> films = jdbcOperations.query(
+            """
+                SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
+                DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                """, new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
 
@@ -200,7 +210,8 @@ public class JdbcFilmRepository implements FilmRepository {
     public List<Film> getTopPopular(int count) {
         final List<Genre> genres = getAllGenres();
         final List<Director> directors = getAllDirectors();
-        final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+        final List<Film> films = jdbcOperations.query(
+                        "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
                         "FILMS.MPA_ID, MPA.NAME " +
                         "FROM FILMS " +
                         "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
@@ -239,7 +250,7 @@ public class JdbcFilmRepository implements FilmRepository {
             films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
             return films;
         } else {
-            final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+            final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE, FILMS.DURATION, " +
                     "FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID " +
                     "FROM FILMS " +
                     "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
