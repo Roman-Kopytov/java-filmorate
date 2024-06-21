@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -75,6 +76,12 @@ public class UserController {
                                           @PathVariable("otherId") @Min(0) long otherId) {
         log.info("==>GET /users  {}", id);
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable long id) {
+        log.info("==>GET /users/{}/feed", id);
+        return userService.getFeed(id);
     }
 
 }

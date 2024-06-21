@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -77,5 +78,10 @@ public class GeneralUserService implements UserService {
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Event> getFeed(long id) {
+        return userRepository.getFeed(id);
     }
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface UserService {
     List<UserDto> getUserFriends(long id);
 
     List<UserDto> getAll();
+
+    List<Event> getFeed(long id);
 }

@@ -1,13 +1,18 @@
 package ru.yandex.practicum.filmorate.dao.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.EventRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,8 +20,8 @@ import java.util.Objects;
 @Repository
 @RequiredArgsConstructor
 public class JdbcUserRepository implements UserRepository {
-
     private final NamedParameterJdbcOperations jdbcOperations;
+    private final JdbcTemplate jdbcTemplate;
     private final UserRowMapper userRowMapper;
 
     @Override
@@ -80,12 +85,31 @@ public class JdbcUserRepository implements UserRepository {
         jdbcOperations.update("INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID) " +
                         "VALUES (:userId,:friendId)",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
+
+        saveEvent(user.getId(), friend.getId(), "FRIEND", "ADD");
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
+
+        saveEvent(user.getId(), friend.getId(), "FRIEND", "REMOVE");
     }
 
+    private void saveEvent(long userId, long entityId, String eventType, String operation) {
+        Map<String, Object> eventValues = new HashMap<>();
+        eventValues.put("USER_ID", userId);
+        eventValues.put("ENTITY_ID", entityId);
+        eventValues.put("EVENT_TYPE", eventType);
+        eventValues.put("OPERATION", operation);
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("FEED").usingGeneratedKeyColumns("EVENT_ID").usingGeneratedKeyColumns("TIMESTAMP");
+        simpleJdbcInsert.execute(eventValues);
+    }
+
+    @Override
+    public List<Event> getFeed(long id) {
+        return jdbcOperations.query("SELECT * FROM FEED WHERE user_id =:userId",
+                Map.of("userId", id), new EventRowMapper());
+    }
 }
