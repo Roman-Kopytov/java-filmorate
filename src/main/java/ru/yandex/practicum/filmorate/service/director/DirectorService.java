@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service.director;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.director.JdbcDirectorRepository;
@@ -12,7 +11,6 @@ import java.util.Optional;
 
 
 @Service
-@Slf4j
 public class DirectorService {
     private final JdbcDirectorRepository storage;
 
@@ -26,12 +24,7 @@ public class DirectorService {
     }
 
     public Director getById(long id) {
-        Optional<Director> director = Optional.ofNullable(storage.getById(id));
-        if (director.isEmpty()) {
-            throw new NotFoundException("Director not found with id: " + id);
-        }
-
-        return storage.getById(id);
+        return Optional.ofNullable(storage.getById(id)).orElseThrow(() -> new NotFoundException("Director not found with id: " + id));
     }
 
     public Director create(Director director) {
@@ -39,11 +32,13 @@ public class DirectorService {
     }
 
     public Director update(Director director) {
+        Optional.ofNullable(storage.getById(director.getId())).orElseThrow(() -> new NotFoundException("Director not found with id: " + director.getId()));
         Director newDirector = storage.update(director);
         return newDirector;
     }
 
     public void delete(long id) {
+        Optional.ofNullable(storage.getById(id)).orElseThrow(() -> new NotFoundException("Director not found with id: " + id));
         storage.delete(id);
     }
 }
