@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -68,6 +69,12 @@ public class FilmController {
     public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
         log.info("==>GET /popular?count={}", count);
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("director/{directorId}")
+    public List<FilmDto> getSortedFilmsByDirector(@PathVariable long directorId, @RequestParam String sortBy) {
+        log.info("==>GET //films/director/{directorId");
+        return filmService.getDirectorFilmsSortedBy(directorId, sortBy);
     }
 
     @PutMapping("/{filmId}/like/{userId}")

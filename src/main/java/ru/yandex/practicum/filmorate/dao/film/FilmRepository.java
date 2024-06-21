@@ -30,4 +30,6 @@ public interface FilmRepository {
     List<Film> searchByDirectorAndTitle(String query, String by);
 
     List<Film> searchByDirector(String query, String by);
+
+    List<Film> getSortedFilmsByDirector(long directorId, String sortBy);
 }
