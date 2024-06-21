@@ -35,11 +35,15 @@ public class JdbcDirectorRepository implements DirectorRepository {
     }
 
     public Director create(Director director) {
-        SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbc).withTableName("DIRECTORS").usingGeneratedKeyColumns("DIRECTOR_ID");
-        long id = insert.executeAndReturnKey(Map.of("name", director.getName())).longValue();
 
-        log.info("Создан новый режиссер с id {}", id);
-        return new Director(id, director.getName());
+        Map<String, Object> columns = new SimpleJdbcInsert(jdbc)
+                .withTableName("DIRECTORS")
+                .usingGeneratedKeyColumns("DIRECTOR_ID")
+                .executeAndReturnKeyHolder(Map.of("name", director.getName()))
+                .getKeys();
+
+        log.info("Создан новый режиссер с id {}", (Long) columns.get("DIRECTOR_ID"));
+        return new Director((Long) columns.get("DIRECTOR_ID"), director.getName());
     }
 
     public Director update(Director director) {

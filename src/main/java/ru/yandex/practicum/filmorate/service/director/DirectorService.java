@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service.director;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.director.JdbcDirectorRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -11,13 +11,9 @@ import java.util.Optional;
 
 
 @Service
+@RequiredArgsConstructor
 public class DirectorService {
     private final JdbcDirectorRepository storage;
-
-    @Autowired
-    public DirectorService(JdbcDirectorRepository storage) {
-        this.storage = storage;
-    }
 
     public List<Director> getAll() {
         return storage.getAll();

@@ -83,7 +83,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public List<FilmDto> getSortedFilmsByDirector(long directorId, String sortBy) {
+    public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
         List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
         List<FilmDto> dtos = films.stream()
                 .map(film -> FilmMapper.mapToUserDto(film))

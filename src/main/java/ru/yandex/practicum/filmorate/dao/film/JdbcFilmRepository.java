@@ -61,7 +61,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
         film.setId(keyHolder.getKeyAs(Long.class));
         saveFilmGenres(film);
-        saveFilmDirectors(film);
+        saveDirectorsToFilm(film);
         return film;
     }
 
@@ -87,7 +87,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 Map.of("filmId", film.getId()));
     }
 
-    private void saveFilmDirectors(Film film) {
+    private void saveDirectorsToFilm(Film film) {
         if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
             film.setDirectors(null);
             return;
@@ -102,7 +102,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 batchValue.toArray(new SqlParameterSource[0]));
     }
 
-    private void cleanFilmDirectors(Film film) {
+    private void cleanDirectorsFromFilm(Film film) {
         jdbcOperations.update("DELETE FROM FILM_DIRECTORS WHERE film_id = :filmId",
                 Map.of("filmId", film.getId()));
     }
@@ -125,8 +125,8 @@ public class JdbcFilmRepository implements FilmRepository {
                 """, params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
-        cleanFilmDirectors(film);
-        saveFilmDirectors(film);
+        cleanDirectorsFromFilm(film);
+        saveDirectorsToFilm(film);
         return getById(film.getId());
     }
 
@@ -140,7 +140,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
                 """, new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
+        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
 
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
@@ -164,7 +164,7 @@ public class JdbcFilmRepository implements FilmRepository {
         return filmGenres;
     }
 
-    Map<Long, HashSet<Director>> getAllFilmsDirectors(final List<Director> allDirectors) {
+    Map<Long, HashSet<Director>> getDirectorsByFilmMap(final List<Director> allDirectors) {
         final Map<Long, HashSet<Director>> filmDirectors = new HashMap<>();
         jdbcOperations.query("SELECT * FROM FILM_DIRECTORS", rs -> {
                     while (rs.next()) {
@@ -221,7 +221,7 @@ public class JdbcFilmRepository implements FilmRepository {
                         "LIMIT :count",
                 Map.of("count", count), new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
+        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
 
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
@@ -234,36 +234,32 @@ public class JdbcFilmRepository implements FilmRepository {
         final List<Director> directors = getAllDirectors();
 
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getAllFilmsDirectors(directors);
+        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
+        final List<Film> films;
+        String query = """
+                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
+                FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID
+                FROM FILMS
+                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID
+                LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
+                WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId
+                GROUP BY FILMS.FILM_ID
+                """;
         if (sortBy.equals("likes")) {
-            final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
-                            "FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID " +
-                            "FROM FILMS " +
-                            "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
-                            "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
-                            "LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID " +
-                            "WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId " +
-                            "GROUP BY FILMS.FILM_ID " +
-                            "ORDER BY COUNT(LIKES.USER_ID) desc", Map.of("directorId", directorId), new FilmRowMapper());
+            films = jdbcOperations.query(query + "\nORDER BY COUNT(LIKES.USER_ID) desc",
+                    Map.of("directorId", directorId), new FilmRowMapper());
 
             films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
             films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-            return films;
         } else {
-            final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE, FILMS.DURATION, " +
-                    "FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID " +
-                    "FROM FILMS " +
-                    "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
-                    "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
-                    "LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID " +
-                    "WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId " +
-                    "GROUP BY FILMS.FILM_ID " +
-                    "ORDER BY FILMS.RELEASE_DATE asc", Map.of("directorId", directorId), new FilmRowMapper());
+            films = jdbcOperations.query(query + "ORDER BY FILMS.RELEASE_DATE asc",
+                    Map.of("directorId", directorId), new FilmRowMapper());
 
             films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
             films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-            return films;
         }
+        return films;
     }
 
 }
