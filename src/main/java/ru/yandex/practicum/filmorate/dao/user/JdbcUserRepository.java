@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.dao.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.EventRowMapper;
@@ -21,7 +19,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class JdbcUserRepository implements UserRepository {
     private final NamedParameterJdbcOperations jdbcOperations;
-    private final JdbcTemplate jdbcTemplate;
     private final UserRowMapper userRowMapper;
 
     @Override
@@ -99,12 +96,16 @@ public class JdbcUserRepository implements UserRepository {
 
     private void saveEvent(long userId, long entityId, String eventType, String operation) {
         Map<String, Object> eventValues = new HashMap<>();
-        eventValues.put("USER_ID", userId);
-        eventValues.put("ENTITY_ID", entityId);
-        eventValues.put("EVENT_TYPE", eventType);
-        eventValues.put("OPERATION", operation);
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("FEED").usingGeneratedKeyColumns("EVENT_ID").usingGeneratedKeyColumns("TIMESTAMP");
-        simpleJdbcInsert.execute(eventValues);
+        eventValues.put("userId", userId);
+        eventValues.put("entityId", entityId);
+        eventValues.put("eventType", eventType);
+        eventValues.put("operation", operation);
+
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
+        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
+                " VALUES(:userId,:entityId,:eventType,:operation)";
+        jdbcOperations.update(query, params, keyHolder);
     }
 
     @Override

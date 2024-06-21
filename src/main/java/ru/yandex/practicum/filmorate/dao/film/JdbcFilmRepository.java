@@ -134,15 +134,31 @@ public class JdbcFilmRepository implements FilmRepository {
     public void addLike(Film film, User user) {
         jdbcOperations.update("INSERT INTO LIKES (film_id,user_id) VALUES (:film_id,:user_id)",
                 Map.of("film_id", film.getId(), "user_id", user.getId()));
+
+        saveEvent(user.getId(), film.getId(), "LIKE", "ADD");
     }
 
     @Override
     public void deleteLike(Film film, User user) {
         jdbcOperations.update("DELETE FROM LIKES WHERE FILM_ID=:film_id",
                 Map.of("film_id", film.getId()));
+
+        saveEvent(user.getId(), film.getId(), "LIKE", "REMOVE");
     }
 
+    private void saveEvent(long userId, long entityId, String eventType, String operation) {
+        Map<String, Object> eventValues = new HashMap<>();
+        eventValues.put("userId", userId);
+        eventValues.put("entityId", entityId);
+        eventValues.put("eventType", eventType);
+        eventValues.put("operation", operation);
 
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
+        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
+                " VALUES(:userId,:entityId,:eventType,:operation)";
+        jdbcOperations.update(query, params, keyHolder);
+    }
 
     @Override
     public List<Film> getTopPopular(int count) {
