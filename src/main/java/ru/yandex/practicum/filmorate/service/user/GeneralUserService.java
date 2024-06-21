@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralUserService implements UserService {
@@ -29,7 +31,7 @@ public class GeneralUserService implements UserService {
     @Override
     public UserDto update(User user) {
         long userId = user.getId();
-        Optional<User> savedUSer = Optional.ofNullable(userRepository.getById(userId));
+        Optional<User> savedUSer = (userRepository.getById(userId));
         if (savedUSer.isEmpty()) {
             throw new NotFoundException("User not found with id: " + userId);
         }
@@ -38,8 +40,8 @@ public class GeneralUserService implements UserService {
 
     @Override
     public UserDto get(long userId) {
-        return UserMapper.mapToUserDto(Optional.ofNullable(userRepository.getById(userId)).orElseThrow(()
-                -> new NotFoundException("User not found with id: " + userId)));
+        return UserMapper.mapToUserDto((userRepository.getById(userId))
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId)));
     }
 
     @Override
@@ -53,7 +55,8 @@ public class GeneralUserService implements UserService {
     }
 
     private User getUserFromRepository(long userId) {
-        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return userRepository.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
@@ -77,5 +80,19 @@ public class GeneralUserService implements UserService {
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Удаление пользователя по Id
+     * Сначала пользователь извелкается из базы
+     * Потом его данные удаляются
+     */
+    @Override
+    public User deleteUserById(long id) {
+        User user = userRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID: " + id + " не найден"));
+        userRepository.deleteUser(id);
+        log.info(String.format("Пользователь с ID: %d удален из базы", id));
+        return user;
     }
 }

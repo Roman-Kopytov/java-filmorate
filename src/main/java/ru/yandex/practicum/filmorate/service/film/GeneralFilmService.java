@@ -74,7 +74,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private User getUserFromRepository(long userId) {
-        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
@@ -96,7 +96,7 @@ public class GeneralFilmService implements FilmService {
             return true;
         }
         List<Long> filmGenreIds = film.getGenres().stream()
-                .map(g -> g.getId())
+                .map(Genre::getId)
                 .toList();
 
         List<Genre> genres = genreRepository.findByIds(filmGenreIds);

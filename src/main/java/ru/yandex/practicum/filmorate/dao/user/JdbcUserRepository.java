@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,14 +21,19 @@ public class JdbcUserRepository implements UserRepository {
     private final UserRowMapper userRowMapper;
 
     @Override
-    public User getById(long userId) {
-        return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
-                Map.of("userId", userId), userRowMapper);
+    public Optional<User> getById(long userId) {
+        return Optional.ofNullable(jdbcOperations.queryForObject("""
+                SELECT * FROM users
+                WHERE user_id =:userId
+                """, Map.of("userId", userId), userRowMapper));
     }
 
     @Override
     public List<User> getAll() {
-        return jdbcOperations.query("SELECT * FROM users ORDER BY USER_ID ", userRowMapper);
+        return jdbcOperations.query("""
+                SELECT * FROM users
+                ORDER BY USER_ID
+                """, userRowMapper);
     }
 
     @Override
@@ -38,8 +44,10 @@ public class JdbcUserRepository implements UserRepository {
                 "NAME", user.getName(),
                 "BIRTHDAY", user.getBirthday());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY)" +
-                " VALUES(:EMAIL,:LOGIN,:NAME,:BIRTHDAY)";
+        String sql = """
+                INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY)
+                VALUES(:EMAIL,:LOGIN,:NAME,:BIRTHDAY)
+                """;
         jdbcOperations.update(sql, params, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         return user;
@@ -53,23 +61,39 @@ public class JdbcUserRepository implements UserRepository {
                 "NAME", user.getName(),
                 "BIRTHDAY", user.getBirthday());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "UPDATE USERS" +
-                " SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY WHERE USER_ID=:ID";
+        String sql = """
+                UPDATE USERS 
+                SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY 
+                WHERE USER_ID=:ID""";
         jdbcOperations.update(sql, params);
         return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
                 Map.of("userId", user.getId()), userRowMapper);
     }
 
     @Override
+    public void deleteUser(long userId) {
+        jdbcOperations.update("""
+                DELETE FROM USERS 
+                WHERE USER_ID = :userId
+                """, Map.of("userId", userId));
+    }
+
+    @Override
     public List<User> getUserFriends(User user) {
-        return jdbcOperations.query("SELECT * FROM USERS WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)",
-                Map.of("userId", user.getId()), userRowMapper);
+        return jdbcOperations.query("""
+                SELECT * FROM USERS
+                WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP 
+                                  WHERE USER_ID = :userId)
+                """, Map.of("userId", user.getId()), userRowMapper);
     }
 
     @Override
     public List<User> getCommonFriends(User user, User otherUser) {
-        String sql = "SELECT * from USERS u WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)" +
-                " AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)";
+        String sql = """
+                SELECT * from USERS u 
+                WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)
+                AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)            
+                """;
         return jdbcOperations.query(sql,
                 Map.of("userId", user.getId(),
                         "otherUserId", otherUser.getId()), userRowMapper);
@@ -77,15 +101,19 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public void addFriend(User user, User friend) {
-        jdbcOperations.update("INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID) " +
-                        "VALUES (:userId,:friendId)",
+        jdbcOperations.update("""
+                        INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID)
+                        VALUES (:userId,:friendId)
+                        """,
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
-        jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
-                Map.of("userId", user.getId(), "friendId", friend.getId()));
+        jdbcOperations.update("""
+                DElETE FROM FRIENDSHIP 
+                WHERE user_id = :userId AND friend_id = :friendId
+                """, Map.of("userId", user.getId(), "friendId", friend.getId()));
     }
 
 }

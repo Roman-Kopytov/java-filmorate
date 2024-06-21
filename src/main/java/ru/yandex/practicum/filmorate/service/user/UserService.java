@@ -24,4 +24,6 @@ public interface UserService {
     List<UserDto> getUserFriends(long id);
 
     List<UserDto> getAll();
+
+    User deleteUserById(long id);
 }
