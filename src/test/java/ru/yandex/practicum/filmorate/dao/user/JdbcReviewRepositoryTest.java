@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @JdbcTest
 @Import({JdbcUserRepository.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class JdbcUserRepositoryTest {
+class JdbcReviewRepositoryTest {
 
     public static final long TEST_USER_ID = 1L;
     public static final long COMMON_FRIEND_USER_ID = 2L;
@@ -26,7 +26,7 @@ class JdbcUserRepositoryTest {
 
     @Test
     void testGetById() {
-        User userInData = userRepository.getById(TEST_USER_ID);
+        User userInData = userRepository.getById(TEST_USER_ID).get();
         assertThat(userInData)
                 .usingRecursiveComparison()
                 .isEqualTo(getTestUser(TEST_USER_ID));
@@ -62,7 +62,7 @@ class JdbcUserRepositoryTest {
         User user = getUserForUpdate();
         user.setId(null);
         User updatedUser = userRepository.save(getUserForUpdate());
-        User userInData = userRepository.getById(updatedUser.getId());
+        User userInData = userRepository.getById(updatedUser.getId()).get();
         assertThat(userInData)
                 .usingRecursiveComparison()
                 .ignoringExpectedNullFields()
@@ -81,7 +81,7 @@ class JdbcUserRepositoryTest {
     void getUserFriends() {
         List<User> usersInData = userRepository.getUserFriends(getTestUser(1));
         assertThat(usersInData)
-                .contains(userRepository.getById(2), userRepository.getById(3));
+                .contains(userRepository.getById(2).get(), userRepository.getById(3).get());
     }
 
     @Test
@@ -98,7 +98,7 @@ class JdbcUserRepositoryTest {
         List<User> usersInData = userRepository.getUserFriends(getTestUser(3));
         assertEquals(2, usersInData.size());
         assertThat(usersInData)
-                .contains(userRepository.getById(1), userRepository.getById(2));
+                .contains(userRepository.getById(1).get(), userRepository.getById(2).get());
     }
 
     @Test
@@ -107,6 +107,6 @@ class JdbcUserRepositoryTest {
         List<User> usersInData = userRepository.getUserFriends(getTestUser(1));
         assertEquals(1, usersInData.size());
         assertThat(usersInData)
-                .contains(userRepository.getById(2));
+                .contains(userRepository.getById(2).get());
     }
 }

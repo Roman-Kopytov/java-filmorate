@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.ReviewRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.ReviewsLikeRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -20,7 +19,6 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     private final NamedParameterJdbcOperations jdbcOperations;
     private final ReviewRowMapper reviewRowMapper;
-    private final ReviewsLikeRowMapper reviewsLikeRowMapper;
 
     @Override
     public Review save(Review review) {
