@@ -94,7 +94,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getAll() {
-        final List<Genre> genres = getAllGenres();
+        final LinkedHashSet<Genre> genres = getAllGenres();
         final List<Film> films = jdbcOperations.query("SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
                 "FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID", new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
@@ -103,7 +103,7 @@ public class JdbcFilmRepository implements FilmRepository {
         return films;
     }
 
-    Map<Long, LinkedHashSet<Genre>> getAllFilmsGenres(final List<Genre> allGenres) {
+    Map<Long, LinkedHashSet<Genre>> getAllFilmsGenres(final LinkedHashSet<Genre> allGenres) {
         final Map<Long, LinkedHashSet<Genre>> filmGenres = new HashMap<>();
         jdbcOperations.query("SELECT * FROM FILMS_GENRES", rs -> {
                     while (rs.next()) {
@@ -121,7 +121,7 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     public LinkedHashSet<Genre> getAllGenres() {
-        return jdbcOperations.query("SELECT * FROM GENRES", new GenreRowMapper());
+        return (LinkedHashSet<Genre>) jdbcOperations.query("SELECT * FROM GENRES", new GenreRowMapper());
     }
 
 
@@ -144,7 +144,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getTopPopular(int count) {
-        final List<Genre> genres = getAllGenres();
+        final LinkedHashSet<Genre> genres = getAllGenres();
         final List<Film> films = jdbcOperations.query("SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
                         "FILMS.MPA_ID, MPA.NAME " +
                         "FROM FILMS " +
