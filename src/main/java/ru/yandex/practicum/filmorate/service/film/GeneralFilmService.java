@@ -30,14 +30,14 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public FilmDto getById(long id) {
-        return FilmMapper.mapToUserDto(getFilmFromRepository(id));
+        return FilmMapper.mapToFilmDto(getFilmFromRepository(id));
 
     }
 
     @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            return FilmMapper.mapToUserDto(filmRepository.save(film));
+            return FilmMapper.mapToFilmDto(filmRepository.save(film));
         }
         return null;
     }
@@ -47,7 +47,7 @@ public class GeneralFilmService implements FilmService {
         if (isGenresValid(film) && isMpaValid(film)) {
             long filmId = film.getId();
             getFilmFromRepository(filmId);
-            return FilmMapper.mapToUserDto(filmRepository.update(film));
+            return FilmMapper.mapToFilmDto(filmRepository.update(film));
         }
         return null;
     }
@@ -55,7 +55,7 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<FilmDto> getAll() {
         return filmRepository.getAll().stream()
-                .map(FilmMapper::mapToUserDto)
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 
@@ -74,7 +74,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private User getUserFromRepository(long userId) {
-        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
