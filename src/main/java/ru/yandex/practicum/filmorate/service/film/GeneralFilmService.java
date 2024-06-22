@@ -88,7 +88,7 @@ public class GeneralFilmService implements FilmService {
                 "JOIN LIKES AS l ON f.FILM_ID = l.FILM_ID " +
                 "JOIN LIKES AS lf ON f.FILM_ID = lf.FILM_ID " +
                 "WHERE l.USER_ID = ? AND lf.USER_ID = ? " +
-                "GROUP BY f.FILM_ID" +
+                "GROUP BY f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME " +
                 "ORDER BY f.NAME";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilmWithGenres, userId, friendId);
