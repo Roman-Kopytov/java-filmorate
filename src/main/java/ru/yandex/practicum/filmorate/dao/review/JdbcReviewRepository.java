@@ -8,10 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +23,8 @@ public class JdbcReviewRepository implements ReviewRepository {
         Map<String, Object> map = Map.of("CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
                 "USER_ID", review.getUserId(),
-                "FILM_ID", review.getFilmId());
+                "FILM_ID", review.getFilmId(),
+                "USEFUL", review.getUseful());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = "INSERT INTO reviews (CONTENT, ISPOSITIVE, USER_ID, FILM_ID)" +
                 " VALUES(:CONTENT, :ISPOSITIVE, :USER_ID, :FILM_ID)";
@@ -36,15 +34,17 @@ public class JdbcReviewRepository implements ReviewRepository {
     }
 
     @Override
-    public Optional<Review> getById(Long reviewId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
-                        "RIGHT JOIN reviews_likes rl ON r.review_id=rl.review_id WHERE r.review_id =:reviewId " +
-                        "GROUP BY r.REVIEW_ID",
-                Map.of("reviewId", reviewId), reviewRowMapper));
-    }
-
-    @Override
     public Review update(Review review) {
+        if (review.getId() == null) {
+            Map<String, Object> map = Map.of("user_id", review.getUserId(),
+                    "film_id", review.getFilmId());
+            review.setId(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
+                    "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
+                    "WHERE r.user_id =:user_id AND r.film_id = :film_id " +
+                    "GROUP BY r.REVIEW_ID", new MapSqlParameterSource(map), reviewRowMapper).getId());
+
+        }
+
         Map<String, Object> map = Map.of("ID", review.getId(),
                 "CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
@@ -55,8 +55,7 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " SET CONTENT=:CONTENT,ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
-        return jdbcOperations.queryForObject("SELECT * FROM reviews WHERE review_id =:reviewId",
-                Map.of("reviewId", review.getId()), reviewRowMapper);
+        return getById(review.getId()).get();
     }
 
     @Override
@@ -70,15 +69,29 @@ public class JdbcReviewRepository implements ReviewRepository {
     }
 
     @Override
+    public Optional<Review> getById(Long reviewId) {
+        Optional<Review> review = Optional.of(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
+                        "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id WHERE r.review_id =:reviewId " +
+                        "GROUP BY r.REVIEW_ID",
+                Map.of("reviewId", reviewId), reviewRowMapper));
+        return review;
+    }
+
+    @Override
     public List<Review> getAll(int count, Long filmId) {
-        List<Review> reviewList;
+        List<Review> reviewList = new ArrayList<>();
         if (filmId == null) {
-            reviewList = jdbcOperations.query("SELECT * FROM reviews LIMIT :count",
+            reviewList = jdbcOperations.query(
+                    "SELECT r.*, SUM(rl.USEFUL) USEFUL " +
+                            "FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
+                            "GROUP BY r.REVIEW_ID LIMIT :count",
                     Map.of("count", count), reviewRowMapper);
         } else {
-            reviewList = jdbcOperations.query("SELECT * FROM reviews " +
+            reviewList = jdbcOperations.query(
+                    "SELECT r.*, SUM(rl.USEFUL) USEFUL " +
+                            "FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
                             "WHERE film_id = :filmId " +
-                            "LIMIT :count",
+                            "GROUP BY r.REVIEW_ID LIMIT :count",
                     Map.of("filmId", filmId, "count", count), reviewRowMapper);
         }
         return reviewList;
