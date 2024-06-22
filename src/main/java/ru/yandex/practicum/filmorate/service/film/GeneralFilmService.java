@@ -36,22 +36,9 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<FilmDto> searchBy(String query, String by) {
-        switch (by) {
-            case "title":
-                return filmRepository.searchByTitle(query, by).stream()
-                        .map(FilmMapper::mapToUserDto)
-                        .collect(Collectors.toList());
-            case "director":
-                return filmRepository.searchByDirector(query, by).stream()
-                        .map(FilmMapper::mapToUserDto)
-                        .collect(Collectors.toList());
-            case "director,title":
-                return filmRepository.searchByDirectorAndTitle(query, by).stream()
-                        .map(FilmMapper::mapToUserDto)
-                        .collect(Collectors.toList());
-            default:
-                return null;
-        }
+        return filmRepository.searchBy(query, by).stream()
+                .map(FilmMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
 
@@ -106,10 +93,9 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
         List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
-        List<FilmDto> dtos = films.stream()
-                .map(film -> FilmMapper.mapToUserDto(film))
+        return films.stream()
+                .map(FilmMapper::mapToUserDto)
                 .collect(Collectors.toList());
-        return dtos;
     }
 
     private boolean isMpaValid(Film film) {
@@ -125,7 +111,7 @@ public class GeneralFilmService implements FilmService {
             return true;
         }
         List<Long> filmGenreIds = film.getGenres().stream()
-                .map(g -> g.getId())
+                .map(Genre::getId)
                 .toList();
 
         List<Genre> genres = genreRepository.findByIds(filmGenreIds);

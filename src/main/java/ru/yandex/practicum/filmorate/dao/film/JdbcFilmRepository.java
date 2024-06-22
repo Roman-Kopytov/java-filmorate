@@ -26,7 +26,7 @@ public class JdbcFilmRepository implements FilmRepository {
     @Override
     public Film getById(long filmId) {
         return jdbcOperations.query(
-                    """
+                """
                         SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE,
                         FILMS.DURATION, MPA.MPA_ID, MPA.NAME,
                         DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME
@@ -53,7 +53,7 @@ public class JdbcFilmRepository implements FilmRepository {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
         jdbcOperations.update(
-                    """
+                """
                         INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)
                         VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)
                         """,
@@ -119,10 +119,10 @@ public class JdbcFilmRepository implements FilmRepository {
         params.addValues(map);
         jdbcOperations.update(
                 """
-                UPDATE FILMS
-                SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
-                WHERE FILM_ID=:filmId
-                """, params);
+                        UPDATE FILMS
+                        SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
+                        WHERE FILM_ID=:filmId
+                        """, params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
         cleanDirectorsFromFilm(film);
@@ -132,19 +132,13 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getAll() {
-        final List<Genre> genres = getAllGenres();
-        final List<Director> directors = getAllDirectors();
         final List<Film> films = jdbcOperations.query(
-            """
-                SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
-                DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                """, new FilmRowMapper());
-        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
+                """
+                        SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
+                        DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                        """, new FilmRowMapper());
 
-        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-        return films;
+        return collectFilmComponent(films);
     }
 
     Map<Long, LinkedHashSet<Genre>> getAllFilmsGenres(final List<Genre> allGenres) {
@@ -190,11 +184,6 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public Map<Long, Set<Long>> getLikes() {
-        return Map.of();
-    }
-
-    @Override
     public void addLike(Film film, User user) {
         jdbcOperations.update("INSERT INTO LIKES (film_id,user_id) VALUES (:film_id,:user_id)",
                 Map.of("film_id", film.getId(), "user_id", user.getId()));
@@ -208,10 +197,8 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getTopPopular(int count) {
-        final List<Genre> genres = getAllGenres();
-        final List<Director> directors = getAllDirectors();
         final List<Film> films = jdbcOperations.query(
-                        "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+                "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
                         "FILMS.MPA_ID, MPA.NAME " +
                         "FROM FILMS " +
                         "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
@@ -220,21 +207,11 @@ public class JdbcFilmRepository implements FilmRepository {
                         "ORDER BY COUNT(LIKES.USER_ID) desc " +
                         "LIMIT :count",
                 Map.of("count", count), new FilmRowMapper());
-        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
-
-        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-        return films;
+        return collectFilmComponent(films);
     }
 
     @Override
     public List<Film> getSortedFilmsByDirector(long directorId, String sortBy) {
-        final List<Genre> genres = getAllGenres();
-        final List<Director> directors = getAllDirectors();
-
-        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
         final List<Film> films;
         String query = """
                 SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
@@ -249,58 +226,57 @@ public class JdbcFilmRepository implements FilmRepository {
         if (sortBy.equals("likes")) {
             films = jdbcOperations.query(query + "\nORDER BY COUNT(LIKES.USER_ID) desc",
                     Map.of("directorId", directorId), new FilmRowMapper());
-
-            films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-            films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         } else {
             films = jdbcOperations.query(query + "ORDER BY FILMS.RELEASE_DATE asc",
                     Map.of("directorId", directorId), new FilmRowMapper());
-
-            films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-            films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         }
+        return collectFilmComponent(films);
+    }
+
+
+    @Override
+    public List<Film> searchBy(String query, String by) {
+        return switch (by) {
+            case "title" -> collectFilmComponent(jdbcOperations.query("""
+                    SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME, DIRECTORS.NAME
+                    FROM FILMS
+                    JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                    LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
+                    LEFT JOIN DIRECTORS on DIRECTORS.DIRECTOR_ID = FILM_DIRECTORS.DIRECTOR_ID
+                    WHERE FILMS.NAME LIKE  concat('%', :query, '%')
+                    GROUP BY FILMS.FILM_ID
+                    """, Map.of("query", query), new FilmRowMapper()));
+            case "director" -> collectFilmComponent(jdbcOperations.query("""
+                    SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME,DIRECTORS.NAME
+                    FROM FILMS
+                    JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                    LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
+                    LEFT JOIN DIRECTORS on DIRECTORS.DIRECTOR_ID = FILM_DIRECTORS.DIRECTOR_ID
+                    WHERE DIRECTORS.NAME LIKE concat('%', :query, '%')
+                    GROUP BY FILMS.FILM_ID
+                    """, Map.of("query", query), new FilmRowMapper()));
+            case "director,title" -> collectFilmComponent(jdbcOperations.query("""
+                    SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME,DIRECTORS.NAME
+                    FROM FILMS
+                    JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                    LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
+                    LEFT JOIN DIRECTORS on DIRECTORS.DIRECTOR_ID = FILM_DIRECTORS.DIRECTOR_ID
+                    WHERE DIRECTORS.NAME LIKE concat('%', :query, '%') OR FILMS.NAME LIKE concat('%', :query, '%')
+                    GROUP BY FILMS.FILM_ID
+                    """, Map.of("query", query), new FilmRowMapper()));
+            default -> null;
+        };
+    }
+
+    private List<Film> collectFilmComponent(List<Film> films) {
+        final List<Genre> genres = getAllGenres();
+        final List<Director> directors = getAllDirectors();
+
+        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
+        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
+
+        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
+        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         return films;
-    }
-
-    @Override
-    public List<Film> searchByTitle(String query, String by) {
-        String newQuery = "%" + query + "%";
-        return jdbcOperations.query("""
-                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME, DIRECTOR.NAME
-                FROM FILMS
-                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                LEFT JOIN DIRECTOR on FILMS.DIRECTOR_ID = DIRECTOR.DIRECTOR_ID
-                WHERE FILMS.NAME LIKE :newQuery
-                GROUP BY FILMS.FILM_ID
-                LIMIT :count
-                """, Map.of("newQuery", newQuery), new FilmRowMapper());
-    }
-
-    @Override
-    public List<Film> searchByDirector(String query, String by) {
-        String newQuery = "%" + query + "%";
-        return jdbcOperations.query("""
-                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME,DIRECTOR.NAME
-                FROM FILMS
-                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                LEFT JOIN DIRECTOR on FILMS.DIRECTOR_ID = DIRECTOR.DIRECTOR_ID
-                WHERE DIRECTOR.NAME LIKE :newQuery
-                GROUP BY FILMS.FILM_ID
-                LIMIT :count
-                """, Map.of("newQuery", newQuery), new FilmRowMapper());
-    }
-
-    @Override
-    public List<Film> searchByDirectorAndTitle(String query, String by) {
-        String newQuery = "%" + query + "%";
-        return jdbcOperations.query("""
-                SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILMS.MPA_ID, MPA.NAME,DIRECTOR.NAME
-                FROM FILMS
-                JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                LEFT JOIN DIRECTOR on FILMS.DIRECTOR_ID = DIRECTOR.DIRECTOR_ID
-                WHERE DIRECTOR.NAME LIKE :newQuery && FILMS.NAME LIKE :newQuery
-                GROUP BY FILMS.FILM_ID
-                LIMIT :count
-                """, Map.of("newQuery", newQuery), new FilmRowMapper());
     }
 }
