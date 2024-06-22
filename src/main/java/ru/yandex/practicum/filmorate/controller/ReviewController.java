@@ -25,7 +25,7 @@ public class ReviewController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
-    public Review create(@Valid @RequestBody Review review) {
+    public Review create(@RequestBody Review review) {
         log.info("==>POST /review  {}", review);
         Review newReview = reviewService.create(review);
         log.info("POST /review <== {}", newReview);
@@ -88,8 +88,6 @@ public class ReviewController {
     public List<Review> getAll(@RequestParam(name = "filmId", required = false) Long filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
         return reviewService.getAll(count, filmId);
     }
-
-
 }
 
 
