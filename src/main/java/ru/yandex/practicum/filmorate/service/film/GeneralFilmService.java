@@ -96,7 +96,7 @@ public class GeneralFilmService implements FilmService {
 
     private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
         Film film = FilmRowMapper.mapRow(rs,rowNum);
-        film.setGenres(jdbcFilmRepository.getAllGenres());
+        film.setGenres((LinkedHashSet<Genre>) jdbcFilmRepository.getAllGenres());
         return film;
     }
 
