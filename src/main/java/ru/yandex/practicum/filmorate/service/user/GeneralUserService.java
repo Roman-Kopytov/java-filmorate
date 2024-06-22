@@ -29,7 +29,7 @@ public class GeneralUserService implements UserService {
     @Override
     public UserDto update(User user) {
         long userId = user.getId();
-        Optional<User> savedUSer = Optional.ofNullable(userRepository.getById(userId));
+        Optional<User> savedUSer = userRepository.getById(userId);
         if (savedUSer.isEmpty()) {
             throw new NotFoundException("User not found with id: " + userId);
         }
@@ -38,7 +38,7 @@ public class GeneralUserService implements UserService {
 
     @Override
     public UserDto get(long userId) {
-        return UserMapper.mapToUserDto(Optional.ofNullable(userRepository.getById(userId)).orElseThrow(()
+        return UserMapper.mapToUserDto(userRepository.getById(userId).orElseThrow(()
                 -> new NotFoundException("User not found with id: " + userId)));
     }
 
@@ -53,7 +53,7 @@ public class GeneralUserService implements UserService {
     }
 
     private User getUserFromRepository(long userId) {
-        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
