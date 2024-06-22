@@ -86,7 +86,7 @@ public class GeneralFilmService implements FilmService {
     public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
         List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
         List<FilmDto> dtos = films.stream()
-                .map(film -> FilmMapper.mapToUserDto(film))
+                .map(film -> FilmMapper.mapToFilmDto(film))
                 .collect(Collectors.toList());
         return dtos;
     }
