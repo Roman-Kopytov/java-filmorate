@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Marker.Update;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 /**
  * Film.
