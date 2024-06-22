@@ -34,7 +34,7 @@ public class GeneralFilmService implements FilmService {
     private final GenreRepository genreRepository;
     private final MpaRepository mpaRepository;
     private final JdbcTemplate jdbcTemplate;
-    private final FilmRowMapper FilmRowMapper;
+    private final FilmRowMapper filmRowMapper;
     private final JdbcFilmRepository jdbcFilmRepository;
 
 
@@ -95,7 +95,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
-        Film film = FilmRowMapper.mapRow(rs,rowNum);
+        Film film = filmRowMapper.mapRow(rs,rowNum);
         film.setGenres((LinkedHashSet<Genre>) jdbcFilmRepository.getAllGenres());
         return film;
     }
