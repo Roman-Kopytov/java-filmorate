@@ -18,7 +18,7 @@ public class Review {
     @NotNull
     @Positive
     Long filmId;
-    int useful;
+    int useful = 0;
 
     public Review(String content, boolean b, long userId, long filmId) {
         this.content = content;
