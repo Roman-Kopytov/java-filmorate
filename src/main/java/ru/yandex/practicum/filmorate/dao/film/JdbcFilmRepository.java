@@ -120,7 +120,7 @@ public class JdbcFilmRepository implements FilmRepository {
         return filmGenres;
     }
 
-    public List<Genre> getAllGenres() {
+    public LinkedHashSet<Genre> getAllGenres() {
         return jdbcOperations.query("SELECT * FROM GENRES", new GenreRowMapper());
     }
 

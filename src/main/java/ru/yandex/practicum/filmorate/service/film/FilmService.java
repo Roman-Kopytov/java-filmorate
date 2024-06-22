@@ -21,14 +21,11 @@ public interface FilmService {
     void addLike(long userId, long filmId);
 
     void deleteLike(long userId, long filmId);
-
-    Mpa getMpaById(int id);
-
-    Set<Genre> getAllGenresByFilmId(int filmId);
+    
 
     List<Film> getPopularFilms(int count);
 
-    List<Film> getCommonFilms(int userId, int friendId);
+    List<Film> getCommonFilms(long userId, long friendId);
 
     FilmDto getById(long id);
 }
