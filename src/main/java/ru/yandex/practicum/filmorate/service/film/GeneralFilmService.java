@@ -95,9 +95,44 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
-        Film film = filmRowMapper.mapRow(rs,rowNum);
-        film.setGenres((LinkedHashSet<Genre>) jdbcFilmRepository.getAllGenres());
+        Film film = mapRowToFilm(rs,rowNum);
+        film.setGenres(getAllGenresByFilmId(rs.getInt("id")));
         return film;
+    }
+
+    @Override
+    public LinkedHashSet<Genre> getAllGenresByFilmId(int filmId) {
+        String sqlQuery = "SELECT fg.GENRE_ID AS id, g.NAME AS name \n" +
+                "FROM FILMS_GENRES AS fg\n" +
+                "INNER JOIN GENRES AS g ON fg.GENRE_ID = g.GENRE_ID\n" +
+                "WHERE fg.FILM_ID = ?\n" +
+                "ORDER BY fg.GENRE_ID;";
+        return new LinkedHashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToGenre, filmId));
+    }
+
+    private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
+        return new Genre(rs.getLong("id"), rs.getString("name"));
+    }
+
+    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
+        Film film = new Film();
+        film.setId(rs.getLong("id"));
+        film.setName(rs.getString("name"));
+        film.setDescription(rs.getString("description"));
+        film.setMpa(getMpaById(rs.getInt("mpa_id")));
+        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+        film.setDuration(rs.getLong("duration"));
+        return film;
+    }
+
+    @Override
+    public Mpa getMpaById(int id) {
+        String sqlQuery = "SELECT MPA_ID, NAME FROM MPA WHERE MPA_ID = ?";
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, id);
+    }
+
+    private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
+        return new Mpa(rs.getInt("MPA_ID"), rs.getString("NAME"));
     }
 
 
