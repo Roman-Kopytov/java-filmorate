@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class Review {
-    Long id;
+    Long reviewId;
     String content;
     @NotNull
     Boolean isPositive;
