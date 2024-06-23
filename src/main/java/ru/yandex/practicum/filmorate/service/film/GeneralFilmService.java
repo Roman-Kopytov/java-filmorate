@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,8 +78,13 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        return filmRepository.getTopPopular(count);
+    public List<FilmDto> getPopularFilms(int count, Long genreId, Integer year) {
+        List<FilmDto> newListFilm = new ArrayList<>();
+        List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
+        for (Film film : filmList) {
+            newListFilm.add(FilmMapper.mapToFilmDto(film));
+        }
+        return newListFilm;
     }
 
     @Override
