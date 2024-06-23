@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.user;
 
 import ru.yandex.practicum.filmorate.model.Like;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public interface UserRepository {
     void addFriend(User user, User friend);
 
     void deleteFriend(User user, User friend);
+
+    List<Event> getFeed(long id);
 
     List<Like> getMapUserLikeFilm();
 }
