@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.film.JdbcFilmRepository;
@@ -18,14 +18,12 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.Collectors;
-
-import static ru.yandex.practicum.filmorate.mapper.FilmMapper.mapToUserDto;
 
 @Service
 @RequiredArgsConstructor
@@ -42,22 +40,20 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public FilmDto getById(long id) {
-        return mapToUserDto(getFilmFromRepository(id));
-
+        return FilmMapper.mapToFilmDto(getFilmFromRepository(id));
     }
 
     @Override
     public List<FilmDto> searchBy(String query, String by) {
         return filmRepository.searchBy(query, by).stream()
-                .map(FilmMapper::mapToUserDto)
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            return mapToUserDto(filmRepository.save(film));
+            return FilmMapper.mapToFilmDto(filmRepository.save(film));
         }
         return null;
     }
@@ -67,7 +63,7 @@ public class GeneralFilmService implements FilmService {
         if (isGenresValid(film) && isMpaValid(film)) {
             long filmId = film.getId();
             getFilmFromRepository(filmId);
-            return mapToUserDto(filmRepository.update(film));
+            return FilmMapper.mapToFilmDto(filmRepository.update(film));
         }
         return null;
     }
@@ -75,7 +71,7 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<FilmDto> getAll() {
         return filmRepository.getAll().stream()
-                .map(FilmMapper::mapToUserDto)
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 
@@ -147,11 +143,11 @@ public class GeneralFilmService implements FilmService {
 
 
     private Film getFilmFromRepository(long filmId) {
-        return Optional.ofNullable(filmRepository.getById(filmId)).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return filmRepository.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
-        return Optional.ofNullable(userRepository.getById(userId)).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        return userRepository.getById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
@@ -159,7 +155,7 @@ public class GeneralFilmService implements FilmService {
         List<FilmDto> newListFilm = new ArrayList<>();
         List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
         for (Film film : filmList) {
-            newListFilm.add(FilmMapper.mapToUserDto(film));
+            newListFilm.add(FilmMapper.mapToFilmDto(film));
         }
         return newListFilm;
     }
@@ -168,7 +164,7 @@ public class GeneralFilmService implements FilmService {
     public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
         List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
         return films.stream()
-                .map(FilmMapper::mapToUserDto)
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 

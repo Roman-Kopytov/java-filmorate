@@ -34,6 +34,5 @@ public interface FilmService {
 
     List<FilmDto> searchBy(String query, String by);
 
-
     List<FilmDto> getPopularFilms(int count, Long genreId, Integer year);
 }

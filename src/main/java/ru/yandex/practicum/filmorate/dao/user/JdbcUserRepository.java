@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,9 +24,9 @@ public class JdbcUserRepository implements UserRepository {
     private final LikesRowMapper likesRowMapper;
 
     @Override
-    public User getById(long userId) {
-        return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
-                Map.of("userId", userId), userRowMapper);
+    public Optional<User> getById(long userId) {
+        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
+                Map.of("userId", userId), userRowMapper));
     }
 
     @Override

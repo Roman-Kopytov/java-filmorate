@@ -4,9 +4,10 @@ import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository {
-    User getById(long userId);
+    Optional<User> getById(long userId);
 
     List<User> getAll();
 

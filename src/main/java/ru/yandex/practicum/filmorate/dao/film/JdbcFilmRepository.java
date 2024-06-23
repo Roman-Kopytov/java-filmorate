@@ -24,9 +24,9 @@ public class JdbcFilmRepository implements FilmRepository {
     private final NamedParameterJdbcOperations jdbcOperations;
 
     @Override
-    public Film getById(long filmId) {
-        return jdbcOperations.query(
-                """
+    public Optional<Film> getById(long filmId) {
+        return Optional.ofNullable(jdbcOperations.query(
+                    """
                         SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE,
                         FILMS.DURATION, MPA.MPA_ID, MPA.NAME,
                         DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME
@@ -38,7 +38,7 @@ public class JdbcFilmRepository implements FilmRepository {
                         left join DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID
                         WHERE FILMS.film_id = :filmId
                         """,
-                Map.of("filmId", filmId), new FilmExtractor());
+                Map.of("filmId", filmId), new FilmExtractor()));
     }
 
     @Override
@@ -127,7 +127,7 @@ public class JdbcFilmRepository implements FilmRepository {
         saveFilmGenres(film);
         cleanDirectorsFromFilm(film);
         saveDirectorsToFilm(film);
-        return getById(film.getId());
+        return getById(film.getId()).get();
     }
 
     @Override
@@ -326,5 +326,4 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         return films;
     }
-
 }
