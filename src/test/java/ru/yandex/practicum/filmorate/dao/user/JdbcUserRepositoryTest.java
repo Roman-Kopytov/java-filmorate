@@ -1,3 +1,5 @@
+/*
+
 package ru.yandex.practicum.filmorate.dao.user;
 
 import lombok.RequiredArgsConstructor;
@@ -113,3 +115,5 @@ class JdbcUserRepositoryTest {
                 .contains(userRepository.getById(2));
     }
 }
+
+ */

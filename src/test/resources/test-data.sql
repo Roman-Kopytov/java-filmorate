@@ -48,8 +48,4 @@ INSERT INTO LIKES (FILM_ID, USER_ID)
            (1, 1);
 
 
-
-
-
-
-
+INSERT INTO DIRECTORS (DIRECTOR_ID, NAME) VALUES ( 1, 'Quentin Tarantino' ), (2, 'Tim Burton'), (3, 'Steven Spielberg');

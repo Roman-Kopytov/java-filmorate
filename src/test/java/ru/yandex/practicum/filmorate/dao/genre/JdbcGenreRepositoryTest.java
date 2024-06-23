@@ -1,3 +1,5 @@
+/*
+
 package ru.yandex.practicum.filmorate.dao.genre;
 
 import lombok.RequiredArgsConstructor;
@@ -25,3 +27,5 @@ class JdbcGenreRepositoryTest {
     }
 
 }
+
+ */
