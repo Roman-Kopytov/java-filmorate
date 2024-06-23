@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class Review {
+    @NotNull
     Long reviewId;
     String content;
     @NotNull
