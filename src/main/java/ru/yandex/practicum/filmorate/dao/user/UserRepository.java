@@ -25,5 +25,6 @@ public interface UserRepository {
     void deleteFriend(User user, User friend);
 
     List<Event> getFeed(long id);
+
     List<Like> getMapUserLikeFilm();
 }
