@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.review.ReviewService;
 
-import java.util.List;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/reviews")
@@ -41,28 +41,28 @@ public class ReviewController {
         return updatedReview;
     }
 
-    @PutMapping("{id}/like/{userId}")
+    @PutMapping("/{reviewId}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Review addLike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        log.info("==>PUT /review  id {} userId {}", id, userId);
-        return reviewService.operationLike(id, userId, LIKE);
+    public Review addLike(@PathVariable("reviewId") Long reviewId, @PathVariable("userId") Long userId) {
+        log.info("==>PUT /review  id {} userId {}", reviewId, userId);
+        return reviewService.operationLike(reviewId, userId, LIKE);
     }
 
-    @PutMapping("{id}/dislike/{userId}")
+    @PutMapping("/{id}/dislike/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review addDislike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         log.info("==>PUT /review  id {} userId {}", id, userId);
         return reviewService.operationLike(id, userId, DISLIKE);
     }
 
-    @DeleteMapping("{id}/dislike/{userId}")
+    @DeleteMapping("/{id}/dislike/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review deleteDislike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         log.info("==>DELETE /review  id {} userId {}", id, userId);
         return reviewService.deleteLike(id, userId);
     }
 
-    @DeleteMapping("{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review deleteLike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         log.info("==>DELETE /review  id {} userId {}", id, userId);
@@ -85,7 +85,7 @@ public class ReviewController {
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<Review> getAll(@RequestParam(name = "filmId", required = false) Long filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
+    public Collection<Review> getAll(@RequestParam(name = "filmId", required = false) Long filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
         return reviewService.getAll(count, filmId);
     }
 }
