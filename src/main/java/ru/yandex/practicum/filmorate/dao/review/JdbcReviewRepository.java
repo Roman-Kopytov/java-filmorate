@@ -23,29 +23,28 @@ public class JdbcReviewRepository implements ReviewRepository {
         Map<String, Object> map = Map.of("CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
                 "USER_ID", review.getUserId(),
-                "FILM_ID", review.getFilmId(),
-                "USEFUL", review.getUseful());
+                "FILM_ID", review.getFilmId());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = "INSERT INTO reviews (CONTENT, ISPOSITIVE, USER_ID, FILM_ID)" +
                 " VALUES(:CONTENT, :ISPOSITIVE, :USER_ID, :FILM_ID)";
         jdbcOperations.update(sql, params, keyHolder);
-        review.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        return getById(review.getId()).get();
+        review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        return getById(review.getReviewId()).get();
     }
 
     @Override
     public Review update(Review review) {
-        if (review.getId() == null) {
+        if (review.getReviewId() == null) {
             Map<String, Object> map = Map.of("user_id", review.getUserId(),
                     "film_id", review.getFilmId());
-            review.setId(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
+            review.setReviewId(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
                     "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
                     "WHERE r.user_id =:user_id AND r.film_id = :film_id " +
-                    "GROUP BY r.REVIEW_ID", new MapSqlParameterSource(map), reviewRowMapper).getId());
+                    "GROUP BY r.REVIEW_ID", new MapSqlParameterSource(map), reviewRowMapper).getReviewId());
 
         }
 
-        Map<String, Object> map = Map.of("ID", review.getId(),
+        Map<String, Object> map = Map.of("ID", review.getReviewId(),
                 "CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
                 "USER_ID", review.getUserId(),
@@ -55,7 +54,7 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " SET CONTENT=:CONTENT,ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
-        return getById(review.getId()).get();
+        return getById(review.getReviewId()).get();
     }
 
     @Override
