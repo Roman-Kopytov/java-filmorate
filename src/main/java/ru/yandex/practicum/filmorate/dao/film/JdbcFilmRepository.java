@@ -181,7 +181,7 @@ public class JdbcFilmRepository implements FilmRepository {
         return filmDirectors;
     }
 
-    private List<Genre> getAllGenres() {
+    public List<Genre> getAllGenres() {
         return jdbcOperations.query("SELECT * FROM GENRES", new GenreRowMapper());
     }
 
