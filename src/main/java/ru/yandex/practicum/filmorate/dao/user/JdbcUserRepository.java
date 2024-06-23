@@ -117,6 +117,7 @@ public class JdbcUserRepository implements UserRepository {
         return jdbcOperations.query("SELECT * FROM FEED WHERE user_id =:userId",
                 Map.of("userId", id), new EventRowMapper());
     }
+
     @Override
     public List<Like> getMapUserLikeFilm() {
         final String query = "SELECT * FROM likes";
