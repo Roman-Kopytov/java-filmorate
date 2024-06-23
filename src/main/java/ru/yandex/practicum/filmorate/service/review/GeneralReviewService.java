@@ -74,7 +74,7 @@ public class GeneralReviewService implements ReviewService {
     }
 
     private void validateFilm(Long filmId) {
-        filmRepository.getById(filmId).orElseThrow(() -> new EntityNotFoundException("No review id = " + filmId));
+        filmRepository.getById(filmId).orElseThrow(() -> new EntityNotFoundException("No film id = " + filmId));
     }
 
 }
