@@ -246,7 +246,7 @@ public class JdbcFilmRepository implements FilmRepository {
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
         final List<Film> films;
-        String query = new String("""
+        String query = """
                 SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
                 FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID
                 FROM FILMS
@@ -256,7 +256,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId
                 GROUP BY FILMS.FILM_ID
                 """ + ((sortBy.equals("likes") ?
-                "\nORDER BY COUNT(LIKES.USER_ID) desc" : "ORDER BY FILMS.RELEASE_DATE asc")));
+                "\nORDER BY COUNT(LIKES.USER_ID) desc" : "ORDER BY FILMS.RELEASE_DATE asc"));
         films = jdbcOperations.query(query, Map.of("directorId", directorId), new FilmRowMapper());
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));

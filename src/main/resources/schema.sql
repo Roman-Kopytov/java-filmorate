@@ -12,9 +12,10 @@ create table if not exists GENRES
     NAME     CHARACTER VARYING(20) NOT NULL
 );
 
-create table if not exists DIRECTORS (
-     DIRECTOR_ID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-     NAME VARCHAR NOT NULL
+create table if not exists DIRECTORS
+(
+    DIRECTOR_ID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    NAME        VARCHAR NOT NULL
 );
 
 create table if not exists FILMS
@@ -43,8 +44,9 @@ create table if not exists FILMS_GENRES
     primary key (FILM_ID, GENRE_ID)
 );
 
-create table if not exists FILM_DIRECTORS (
-    FILM_ID BIGINT REFERENCES FILMS (FILM_ID) ON DELETE CASCADE,
+create table if not exists FILM_DIRECTORS
+(
+    FILM_ID     BIGINT REFERENCES FILMS (FILM_ID) ON DELETE CASCADE,
     DIRECTOR_ID BIGINT REFERENCES DIRECTORS (DIRECTOR_ID) ON DELETE CASCADE,
     primary key (FILM_ID, DIRECTOR_ID)
 );

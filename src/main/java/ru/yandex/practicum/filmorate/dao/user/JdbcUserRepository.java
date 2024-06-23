@@ -65,7 +65,7 @@ public class JdbcUserRepository implements UserRepository {
                 UPDATE USERS 
                 SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY 
                 WHERE USER_ID=:ID""";
-            jdbcOperations.update(sql, params);
+        jdbcOperations.update(sql, params);
         return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
                 Map.of("userId", user.getId()), userRowMapper);
     }
