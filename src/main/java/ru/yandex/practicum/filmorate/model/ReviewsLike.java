@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class ReviewsLike {
-    Long reviewId;
+    Long id;
     Long userId;
     int useful;
 }
