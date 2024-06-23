@@ -28,7 +28,7 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " VALUES(:CONTENT, :ISPOSITIVE, :USER_ID, :FILM_ID)";
         jdbcOperations.update(sql, params, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        saveEvent(review.getUserId(), review.getFilmId(), "REVIEW", "ADD");
+        saveEvent(review.getUserId(), review.getReviewId(), "REVIEW", "ADD");
         return getById(review.getReviewId()).get();
     }
 
@@ -54,7 +54,7 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " SET CONTENT=:CONTENT,ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
-        saveEvent(review.getUserId(), review.getFilmId(), "REVIEW", "UPDATE");
+        saveEvent(review.getUserId(), review.getReviewId(), "REVIEW", "UPDATE");
         return getById(review.getReviewId()).get();
     }
 
