@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ContextConfiguration;
+import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @JdbcTest
 @Import({JdbcUserRepository.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@ContextConfiguration(classes = {LikesRowMapper.class, JdbcUserRepository.class})
 class JdbcUserRepositoryTest {
 
     public static final long TEST_USER_ID = 1L;

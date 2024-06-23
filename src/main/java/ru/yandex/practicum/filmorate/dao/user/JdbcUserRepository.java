@@ -5,9 +5,14 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.EventRowMapper;
+import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +24,7 @@ public class JdbcUserRepository implements UserRepository {
 
     private final NamedParameterJdbcOperations jdbcOperations;
     private final UserRowMapper userRowMapper;
+    private final LikesRowMapper likesRowMapper;
 
     @Override
     public Optional<User> getById(long userId) {
@@ -106,6 +112,8 @@ public class JdbcUserRepository implements UserRepository {
                         VALUES (:userId,:friendId)
                         """,
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
+
+        saveEvent(user.getId(), friend.getId(), "FRIEND", "ADD");
     }
 
     @Override
@@ -114,6 +122,36 @@ public class JdbcUserRepository implements UserRepository {
                 DElETE FROM FRIENDSHIP 
                 WHERE user_id = :userId AND friend_id = :friendId
                 """, Map.of("userId", user.getId(), "friendId", friend.getId()));
+        jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
+                Map.of("userId", user.getId(), "friendId", friend.getId()));
+
+        saveEvent(user.getId(), friend.getId(), "FRIEND", "REMOVE");
+    }
+
+    private void saveEvent(long userId, long entityId, String eventType, String operation) {
+        Map<String, Object> eventValues = new HashMap<>();
+        eventValues.put("userId", userId);
+        eventValues.put("entityId", entityId);
+        eventValues.put("eventType", eventType);
+        eventValues.put("operation", operation);
+
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
+        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
+                " VALUES(:userId,:entityId,:eventType,:operation)";
+        jdbcOperations.update(query, params, keyHolder);
+    }
+
+    @Override
+    public List<Event> getFeed(long id) {
+        return jdbcOperations.query("SELECT * FROM FEED WHERE user_id =:userId",
+                Map.of("userId", id), new EventRowMapper());
+    }
+
+    @Override
+    public List<Like> getMapUserLikeFilm() {
+        final String query = "SELECT * FROM likes";
+        return jdbcOperations.query(query, likesRowMapper);
     }
 
 }

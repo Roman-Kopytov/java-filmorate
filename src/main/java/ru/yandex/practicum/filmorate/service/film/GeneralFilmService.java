@@ -19,14 +19,13 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
+
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.filmorate.mapper.FilmMapper.mapToUserDto;
 
 @Slf4j
 @Service
@@ -44,8 +43,14 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public FilmDto getById(long id) {
-        return mapToUserDto(getFilmFromRepository(id));
+        return FilmMapper.mapToFilmDto(getFilmFromRepository(id));
+    }
 
+    @Override
+    public List<FilmDto> searchBy(String query, String by) {
+        return filmRepository.searchBy(query, by).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -66,7 +71,7 @@ public class GeneralFilmService implements FilmService {
     @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            return mapToUserDto(filmRepository.save(film));
+            return FilmMapper.mapToFilmDto(filmRepository.save(film));
         }
         return null;
     }
@@ -84,7 +89,7 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<FilmDto> getAll() {
         return filmRepository.getAll().stream()
-                .map(FilmMapper::mapToUserDto)
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 
@@ -169,7 +174,7 @@ public class GeneralFilmService implements FilmService {
         List<FilmDto> newListFilm = new ArrayList<>();
         List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
         for (Film film : filmList) {
-            newListFilm.add(FilmMapper.mapToUserDto(film));
+            newListFilm.add(FilmMapper.mapToFilmDto(film));
         }
         return newListFilm;
     }
@@ -177,10 +182,9 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
         List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
-        List<FilmDto> dtos = films.stream()
-                .map(film -> FilmMapper.mapToUserDto(film))
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
-        return dtos;
     }
 
     private boolean isMpaValid(Film film) {
@@ -196,7 +200,7 @@ public class GeneralFilmService implements FilmService {
             return true;
         }
         List<Long> filmGenreIds = film.getGenres().stream()
-                .map(Genre::getId)
+                .map(g -> g.getId())
                 .toList();
 
         List<Genre> genres = genreRepository.findByIds(filmGenreIds);

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.pathHandler.SearchParameters;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
@@ -61,6 +62,14 @@ public class FilmController {
         FilmDto updatedFilm = filmService.update(film);
         log.info("PUT /films <== {}", updatedFilm);
         return updatedFilm;
+    }
+
+    @GetMapping("/search")
+    @Validated
+    public List<FilmDto> searchBy(@RequestParam(name = "query") String query,
+                                  @RequestParam(name = "by", defaultValue = "director,title") String by) {
+        log.info("==>GET /search?query={}&by={}", query, by);
+        return filmService.searchBy(query, SearchParameters.by(by));
     }
 
     @GetMapping("/popular")

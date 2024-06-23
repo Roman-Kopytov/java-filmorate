@@ -26,4 +26,8 @@ public interface UserService {
     List<UserDto> getAll();
 
     User deleteUserById(long id);
+
+    List<FilmDto> getRecommendations(Long id);
+
+    List<EventDto> getFeed(long id);
 }
