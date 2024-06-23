@@ -220,13 +220,13 @@ public class JdbcFilmRepository implements FilmRepository {
         final List<Director> directors = getAllDirectors();
         final List<Film> films = jdbcOperations.query(
                 """
-                        SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, 
-                        FILMS.MPA_ID, MPA.NAME 
-                        FROM FILMS 
-                        JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID 
-                        LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID 
-                        GROUP BY FILMS.FILM_ID 
-                        ORDER BY COUNT(LIKES.USER_ID) desc 
+                        SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
+                        FILMS.MPA_ID, MPA.NAME
+                        FROM FILMS
+                        JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                        LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID
+                        GROUP BY FILMS.FILM_ID
+                        ORDER BY COUNT(LIKES.USER_ID) desc
                         LIMIT :count
                         """,
                 Map.of("count", count), new FilmRowMapper());
