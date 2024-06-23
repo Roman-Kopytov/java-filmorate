@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -35,6 +34,14 @@ public class FilmController {
         FilmDto savedFilm = filmService.getById(id);
         log.info("GET /films/{} <== {}", id, savedFilm);
         return savedFilm;
+    }
+
+    @DeleteMapping("/{id}")
+    public FilmDto deleteFilmById(@PathVariable("id") long id) {
+        log.info("==>DELETE films/{}", id);
+        FilmDto deletedFilm = filmService.deleteFilmById(id);
+        log.info("DELETE /films/{} <== {}", id, deletedFilm);
+        return deletedFilm;
     }
 
     @PostMapping

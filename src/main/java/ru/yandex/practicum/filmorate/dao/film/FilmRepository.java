@@ -5,11 +5,14 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public interface FilmRepository {
 
-    Film getById(long filmId);
+    Optional<Film> getById(long filmId);
+
+    void deleteFilmById(long id);
 
     Film save(Film film);
 

@@ -58,6 +58,7 @@ create table if not exists FRIENDSHIP
         primary key (USER_ID, FRIEND_ID)
 );
 
+
 create table if not exists LIKES
 (
     FILM_ID BIGINT  NOT NULL REFERENCES FILMS (FILM_ID) ON DELETE CASCADE,

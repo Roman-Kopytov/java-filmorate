@@ -24,9 +24,9 @@ public class JdbcFilmRepository implements FilmRepository {
     private final NamedParameterJdbcOperations jdbcOperations;
 
     @Override
-    public Film getById(long filmId) {
-        return jdbcOperations.query(
-                    """
+    public Optional<Film> getById(long filmId) {
+        return Optional.ofNullable(jdbcOperations.query(
+                """
                         SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE,
                         FILMS.DURATION, MPA.MPA_ID, MPA.NAME,
                         DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME
@@ -38,7 +38,15 @@ public class JdbcFilmRepository implements FilmRepository {
                         left join DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID
                         WHERE FILMS.film_id = :filmId
                         """,
-                Map.of("filmId", filmId), new FilmExtractor());
+                Map.of("filmId", filmId), new FilmExtractor()));
+    }
+
+    @Override
+    public void deleteFilmById(long id) {
+        jdbcOperations.update("""
+                DELETE FROM FILMS
+                WHERE FILM_ID = :filmId
+                """, Map.of("filmId", id));
     }
 
     @Override
@@ -53,7 +61,7 @@ public class JdbcFilmRepository implements FilmRepository {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
         jdbcOperations.update(
-                    """
+                """
                         INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)
                         VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)
                         """,
@@ -119,15 +127,15 @@ public class JdbcFilmRepository implements FilmRepository {
         params.addValues(map);
         jdbcOperations.update(
                 """
-                UPDATE FILMS
-                SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
-                WHERE FILM_ID=:filmId
-                """, params);
+                        UPDATE FILMS
+                        SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
+                        WHERE FILM_ID=:filmId
+                        """, params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
         cleanDirectorsFromFilm(film);
         saveDirectorsToFilm(film);
-        return getById(film.getId());
+        return film;
     }
 
     @Override
@@ -135,10 +143,10 @@ public class JdbcFilmRepository implements FilmRepository {
         final List<Genre> genres = getAllGenres();
         final List<Director> directors = getAllDirectors();
         final List<Film> films = jdbcOperations.query(
-            """
-                SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
-                DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                """, new FilmRowMapper());
+                """
+                        SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
+                        DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                        """, new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
 
@@ -211,14 +219,16 @@ public class JdbcFilmRepository implements FilmRepository {
         final List<Genre> genres = getAllGenres();
         final List<Director> directors = getAllDirectors();
         final List<Film> films = jdbcOperations.query(
-                        "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
-                        "FILMS.MPA_ID, MPA.NAME " +
-                        "FROM FILMS " +
-                        "JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
-                        "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
-                        "GROUP BY FILMS.FILM_ID " +
-                        "ORDER BY COUNT(LIKES.USER_ID) desc " +
-                        "LIMIT :count",
+                """
+                        SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, 
+                        FILMS.MPA_ID, MPA.NAME 
+                        FROM FILMS 
+                        JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID 
+                        LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID 
+                        GROUP BY FILMS.FILM_ID 
+                        ORDER BY COUNT(LIKES.USER_ID) desc 
+                        LIMIT :count
+                        """,
                 Map.of("count", count), new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
@@ -236,7 +246,7 @@ public class JdbcFilmRepository implements FilmRepository {
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
         final List<Film> films;
-        String query = """
+        String query = new String("""
                 SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
                 FILMS.MPA_ID, MPA.NAME, FILM_DIRECTORS.DIRECTOR_ID
                 FROM FILMS
@@ -245,20 +255,11 @@ public class JdbcFilmRepository implements FilmRepository {
                 LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
                 WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId
                 GROUP BY FILMS.FILM_ID
-                """;
-        if (sortBy.equals("likes")) {
-            films = jdbcOperations.query(query + "\nORDER BY COUNT(LIKES.USER_ID) desc",
-                    Map.of("directorId", directorId), new FilmRowMapper());
-
-            films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-            films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-        } else {
-            films = jdbcOperations.query(query + "ORDER BY FILMS.RELEASE_DATE asc",
-                    Map.of("directorId", directorId), new FilmRowMapper());
-
-            films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-            films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-        }
+                """ + ((sortBy.equals("likes") ?
+                "\nORDER BY COUNT(LIKES.USER_ID) desc" : "ORDER BY FILMS.RELEASE_DATE asc")));
+        films = jdbcOperations.query(query, Map.of("directorId", directorId), new FilmRowMapper());
+        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
+        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         return films;
     }
 

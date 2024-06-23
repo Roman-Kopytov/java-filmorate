@@ -8,6 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Director {
-    private final Long id;
+    private Long id;
     private String name;
 }

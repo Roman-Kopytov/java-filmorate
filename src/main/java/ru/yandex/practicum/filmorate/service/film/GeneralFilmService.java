@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
@@ -16,9 +17,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralFilmService implements FilmService {
@@ -34,6 +35,20 @@ public class GeneralFilmService implements FilmService {
 
     }
 
+    /**
+     * Метод на удаление фильма
+     * @param id
+     * @return
+     */
+    @Override
+    public FilmDto deleteFilmById(long id) {
+        Film film = filmRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с ID %d не найден", id)));
+        filmRepository.deleteFilmById(id);
+        log.info(String.format("Фильм с ID %d был успешно удален", id));
+        return FilmMapper.mapToUserDto(film);
+    }
+
     @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
@@ -45,8 +60,8 @@ public class GeneralFilmService implements FilmService {
     @Override
     public FilmDto update(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            long filmId = film.getId();
-            getFilmFromRepository(filmId);
+            filmRepository.getById(film.getId())
+                    .orElseThrow(() -> new NotFoundException(String.format("Фильс с ID %d не найден", film.getId())));
             return FilmMapper.mapToUserDto(filmRepository.update(film));
         }
         return null;
@@ -70,7 +85,8 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film getFilmFromRepository(long filmId) {
-        return Optional.ofNullable(filmRepository.getById(filmId)).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return filmRepository.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
