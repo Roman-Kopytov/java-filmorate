@@ -215,9 +215,10 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public List<Film> getTopPopular(int count) {
+    public List<Film> getTopPopular(int count, Long genreId, Integer year) {
         final List<Genre> genres = getAllGenres();
         final List<Director> directors = getAllDirectors();
+
         final List<Film> films = jdbcOperations.query(
                 """
                         SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, 
@@ -230,6 +231,7 @@ public class JdbcFilmRepository implements FilmRepository {
                         LIMIT :count
                         """,
                 Map.of("count", count), new FilmRowMapper());
+
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
 
@@ -255,12 +257,13 @@ public class JdbcFilmRepository implements FilmRepository {
                 LEFT JOIN FILM_DIRECTORS on FILMS.FILM_ID = FILM_DIRECTORS.FILM_ID
                 WHERE FILM_DIRECTORS.DIRECTOR_ID = :directorId
                 GROUP BY FILMS.FILM_ID
+
                 """ + ((sortBy.equals("likes") ?
                 "\nORDER BY COUNT(LIKES.USER_ID) desc" : "ORDER BY FILMS.RELEASE_DATE asc"));
         films = jdbcOperations.query(query, Map.of("directorId", directorId), new FilmRowMapper());
         films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
         films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
+
         return films;
     }
-
 }
