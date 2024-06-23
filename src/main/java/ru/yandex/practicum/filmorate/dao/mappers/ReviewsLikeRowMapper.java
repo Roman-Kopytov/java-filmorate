@@ -10,10 +10,10 @@ import java.sql.SQLException;
 @Component
 public class ReviewsLikeRowMapper implements RowMapper<ReviewsLike> {
     public ReviewsLike mapRow(ResultSet rs, int rowNum) throws SQLException {
-        ReviewsLike u = new ReviewsLike();
-        u.setId(rs.getLong("review_id"));
-        u.setUserId(rs.getLong("user_id"));
-        u.setUseful(rs.getInt("useful"));
-        return u;
+        return new ReviewsLike(
+                rs.getLong("review_id"),
+                rs.getLong("user_id"),
+                rs.getInt("useful")
+        );
     }
 }

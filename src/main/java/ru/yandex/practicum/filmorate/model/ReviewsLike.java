@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ReviewsLike {
-    Long id;
-    Long userId;
-    int useful;
+    private final Long id;
+    private final Long userId;
+    private final int useful;
 }
