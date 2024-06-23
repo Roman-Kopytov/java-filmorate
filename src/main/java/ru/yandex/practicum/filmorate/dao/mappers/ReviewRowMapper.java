@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class ReviewRowMapper implements RowMapper<Review> {
     public Review mapRow(ResultSet rs, int rowNum) throws SQLException {
         Review review = new Review();
-        review.setId(rs.getLong("review_id"));
+        review.setReviewId(rs.getLong("review_id"));
         review.setContent(rs.getString("content"));
         review.setIsPositive(rs.getBoolean("ispositive"));
         review.setUserId(rs.getLong("user_id"));
