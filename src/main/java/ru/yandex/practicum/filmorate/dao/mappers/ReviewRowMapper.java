@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 @Component
 public class ReviewRowMapper implements RowMapper<Review> {
@@ -16,12 +17,8 @@ public class ReviewRowMapper implements RowMapper<Review> {
         review.setIsPositive(rs.getBoolean("ispositive"));
         review.setUserId(rs.getLong("user_id"));
         review.setFilmId(rs.getLong("film_id"));
-        Integer i = rs.getInt("useful");
-        if (i == null) {
-            review.setUseful(0);
-        } else {
-            review.setUseful(rs.getInt("useful"));
-        }
+        Optional<Integer> integerOptional = Optional.of(rs.getInt("useful"));
+        review.setUseful(integerOptional.orElse(0));
         return review;
     }
 }

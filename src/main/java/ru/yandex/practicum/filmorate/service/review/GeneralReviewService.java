@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.review.ReviewRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public class GeneralReviewService implements ReviewService {
 
     @Override
     public Review getById(Long id) {
-        return reviewRepository.getById(id).orElseThrow(() -> new EntityNotFoundException("No review id = " + id));
+        return reviewRepository.getById(id).orElseThrow(() -> new NotFoundException("No review id = " + id));
     }
 
     @Override
@@ -66,15 +66,15 @@ public class GeneralReviewService implements ReviewService {
     }
 
     private void validateReview(Long id) {
-        reviewRepository.getById(id).orElseThrow(() -> new EntityNotFoundException("No review id = " + id));
+        reviewRepository.getById(id).orElseThrow(() -> new NotFoundException("No review id = " + id));
     }
 
     private void validateUser(Long id) {
-        userRepository.getById(id).orElseThrow(() -> new EntityNotFoundException("No user id = " + id));
+        userRepository.getById(id).orElseThrow(() -> new NotFoundException("No user id = " + id));
     }
 
     private void validateFilm(Long filmId) {
-        filmRepository.getById(filmId).orElseThrow(() -> new EntityNotFoundException("No film id = " + filmId));
+        filmRepository.getById(filmId).orElseThrow(() -> new NotFoundException("No film id = " + filmId));
     }
 
 }
