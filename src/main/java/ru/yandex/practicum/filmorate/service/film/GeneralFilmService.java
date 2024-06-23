@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.film.JdbcFilmRepository;
@@ -18,16 +18,12 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static ru.yandex.practicum.filmorate.mapper.FilmMapper.mapToUserDto;
 
 @Service
 @RequiredArgsConstructor
@@ -45,11 +41,12 @@ public class GeneralFilmService implements FilmService {
     @Override
     public FilmDto getById(long id) {
         return FilmMapper.mapToFilmDto(getFilmFromRepository(id));
+    }
 
     @Override
     public List<FilmDto> searchBy(String query, String by) {
         return filmRepository.searchBy(query, by).stream()
-                .map(FilmMapper::mapToUserDto)
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 

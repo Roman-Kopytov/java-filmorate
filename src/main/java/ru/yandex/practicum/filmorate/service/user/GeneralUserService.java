@@ -91,7 +91,7 @@ public class GeneralUserService implements UserService {
         for (Long l : listLongFilms) {
             for (Film f : filmList) {
                 if (f.getId().equals(l)) {
-                    FilmDto filmDto = FilmMapper.mapToUserDto(f);
+                    FilmDto filmDto = FilmMapper.mapToFilmDto(f);
                     if (!recommendedFilms.contains(filmDto))
                         recommendedFilms.add(filmDto);
                 }
