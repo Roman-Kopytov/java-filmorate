@@ -61,7 +61,7 @@ public class JdbcFilmRepository implements FilmRepository {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
         jdbcOperations.update(
-                """
+                    """
                         INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)
                         VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)
                         """,
@@ -127,10 +127,10 @@ public class JdbcFilmRepository implements FilmRepository {
         params.addValues(map);
         jdbcOperations.update(
                 """
-                        UPDATE FILMS
-                        SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
-                        WHERE FILM_ID=:filmId
-                        """, params);
+                UPDATE FILMS
+                SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
+                WHERE FILM_ID=:filmId
+                """, params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
         cleanDirectorsFromFilm(film);
@@ -143,10 +143,10 @@ public class JdbcFilmRepository implements FilmRepository {
         final List<Genre> genres = getAllGenres();
         final List<Director> directors = getAllDirectors();
         final List<Film> films = jdbcOperations.query(
-                """
-                        SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
-                        DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                        """, new FilmRowMapper());
+            """
+                SELECT FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE,
+                DURATION,FILMS.MPA_ID, MPA.NAME FROM FILMS JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                """, new FilmRowMapper());
         final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
         final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
 
@@ -189,7 +189,7 @@ public class JdbcFilmRepository implements FilmRepository {
         return filmDirectors;
     }
 
-    private List<Genre> getAllGenres() {
+    public List<Genre> getAllGenres() {
         return jdbcOperations.query("SELECT * FROM GENRES", new GenreRowMapper());
     }
 

@@ -19,11 +19,18 @@ public interface FilmService {
 
     void deleteLike(long userId, long filmId);
 
-    List<Film> getPopularFilms(int count);
+    LinkedHashSet<Genre> getAllGenresByFilmId(int filmId);
+
+    Mpa getMpaById(int id);
+
+    List<Film> getCommonFilms(long userId, long friendId);
 
     List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy);
 
     FilmDto getById(long id);
 
     FilmDto deleteFilmById(long id);
+
+
+    List<FilmDto> getPopularFilms(int count, Long genreId, Integer year);
 }
