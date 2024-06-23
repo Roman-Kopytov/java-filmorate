@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.validate.Validate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,7 +37,7 @@ public class GeneralFilmService implements FilmService {
     private final JdbcTemplate jdbcTemplate;
     private final FilmRowMapper filmRowMapper;
     private final JdbcFilmRepository jdbcFilmRepository;
-
+    private final Validate validate;
 
     @Override
     public FilmDto getById(long id) {
@@ -77,11 +78,15 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public void addLike(long userId, long filmId) {
+        validate.validateUser(userId);
+        validate.validateFilm(filmId);
         filmRepository.addLike(getFilmFromRepository(filmId), getUserFromRepository(userId));
     }
 
     @Override
     public void deleteLike(long userId, long filmId) {
+        validate.validateUser(userId);
+        validate.validateFilm(filmId);
         filmRepository.deleteLike(getFilmFromRepository(filmId), getUserFromRepository(userId));
     }
 
