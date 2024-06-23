@@ -26,7 +26,7 @@ public interface FilmService {
 
     Mpa getMpaById(int id);
 
-    List<Film> getPopularFilms(int count);
+    List<Film> getCommonFilms(long userId, long friendId);
 
     List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy);
 
