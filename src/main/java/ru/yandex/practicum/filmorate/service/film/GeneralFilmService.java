@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
+import ru.yandex.practicum.filmorate.dao.film.JdbcFilmRepository;
 import ru.yandex.practicum.filmorate.dao.genre.GenreRepository;
+import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
@@ -16,11 +19,11 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.mapToUserDto;
@@ -111,7 +114,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
-        Film film = mapRowToFilm(rs,rowNum);
+        Film film = mapRowToFilm(rs, rowNum);
         film.setGenres(getAllGenresByFilmId(rs.getInt("id")));
         return film;
     }
@@ -148,7 +151,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-        return new Mpa(rs.getInt("MPA_ID"), rs.getString("NAME"));
+        return new Mpa(rs.getString("NAME"), rs.getInt("MPA_ID"));
     }
 
 
