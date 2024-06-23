@@ -93,7 +93,7 @@ class JdbcFilmRepositoryTest {
 
     @Test
     void getTopPopular() {
-        List<Film> filmsInData = filmRepository.getTopPopular(10);
+        List<Film> filmsInData = filmRepository.getTopPopular(10, null, null);
         assertEquals(3, filmsInData.size());
         LinkedList<Film> expectedTop = new LinkedList<>(List.of(getTestFilm(2), getTestFilm(1), getTestFilm(3)));
         assertEquals(expectedTop, filmsInData);
