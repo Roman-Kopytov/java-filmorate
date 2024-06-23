@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ContextConfiguration;
+import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -20,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @JdbcTest
 @Import({JdbcUserRepository.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class JdbcReviewRepositoryTest {
+@ContextConfiguration(classes = {LikesRowMapper.class, JdbcUserRepository.class})
+class JdbcUserRepositoryTest {
 
     public static final long TEST_USER_ID = 1L;
     public static final long COMMON_FRIEND_USER_ID = 2L;
@@ -28,7 +31,7 @@ class JdbcReviewRepositoryTest {
 
     @Test
     void testGetById() {
-        User userInData = userRepository.getById(TEST_USER_ID).get();
+        User userInData = userRepository.getById(TEST_USER_ID);
         assertThat(userInData)
                 .usingRecursiveComparison()
                 .isEqualTo(getTestUser(TEST_USER_ID));
@@ -64,7 +67,7 @@ class JdbcReviewRepositoryTest {
         User user = getUserForUpdate();
         user.setId(null);
         User updatedUser = userRepository.save(getUserForUpdate());
-        User userInData = userRepository.getById(updatedUser.getId()).get();
+        User userInData = userRepository.getById(updatedUser.getId());
         assertThat(userInData)
                 .usingRecursiveComparison()
                 .ignoringExpectedNullFields()
@@ -83,7 +86,7 @@ class JdbcReviewRepositoryTest {
     void getUserFriends() {
         List<User> usersInData = userRepository.getUserFriends(getTestUser(1));
         assertThat(usersInData)
-                .contains(userRepository.getById(2).get(), userRepository.getById(3).get());
+                .contains(userRepository.getById(2), userRepository.getById(3));
     }
 
     @Test
@@ -100,7 +103,7 @@ class JdbcReviewRepositoryTest {
         List<User> usersInData = userRepository.getUserFriends(getTestUser(3));
         assertEquals(2, usersInData.size());
         assertThat(usersInData)
-                .contains(userRepository.getById(1).get(), userRepository.getById(2).get());
+                .contains(userRepository.getById(1), userRepository.getById(2));
     }
 
     @Test
@@ -109,7 +112,7 @@ class JdbcReviewRepositoryTest {
         List<User> usersInData = userRepository.getUserFriends(getTestUser(1));
         assertEquals(1, usersInData.size());
         assertThat(usersInData)
-                .contains(userRepository.getById(2).get());
+                .contains(userRepository.getById(2));
     }
 }
 
