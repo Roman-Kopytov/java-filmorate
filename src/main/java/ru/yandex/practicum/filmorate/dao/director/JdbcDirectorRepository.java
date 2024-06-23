@@ -42,7 +42,7 @@ public class JdbcDirectorRepository implements DirectorRepository {
                 .executeAndReturnKeyHolder(Map.of("name", director.getName()))
                 .getKeys();
 
-        log.info("Создан новый режиссер с id {}", (Long) columns.get("DIRECTOR_ID"));
+        log.info("Создан новый режиссер с id {}", columns.get("DIRECTOR_ID"));
         return new Director((Long) columns.get("DIRECTOR_ID"), director.getName());
     }
 
