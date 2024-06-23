@@ -28,6 +28,7 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " VALUES(:CONTENT, :ISPOSITIVE, :USER_ID, :FILM_ID)";
         jdbcOperations.update(sql, params, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        saveEvent(review.getUserId(), review.getFilmId(), "REVIEW", "ADD");
         return getById(review.getReviewId()).get();
     }
 
@@ -53,6 +54,7 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " SET CONTENT=:CONTENT,ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
+        saveEvent(review.getUserId(), review.getFilmId(), "REVIEW", "UPDATE");
         return getById(review.getReviewId()).get();
     }
 
@@ -63,6 +65,7 @@ public class JdbcReviewRepository implements ReviewRepository {
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         jdbcOperations.update("DELETE FROM REVIEWS WHERE REVIEW_ID=:reviewId",
                 params);
+        saveEvent(review.getUserId(), reviewId, "REVIEW", "REMOVE");
         return review;
     }
 
@@ -104,6 +107,7 @@ public class JdbcReviewRepository implements ReviewRepository {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, useful)" +
                 " VALUES(:review_id,:user_id,:useful)";
         jdbcOperations.update(sql, params);
+        saveEvent(userId, id, "LIKE", "ADD");
         return getById(id).get();
     }
 
@@ -115,8 +119,21 @@ public class JdbcReviewRepository implements ReviewRepository {
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = "DELETE FROM REVIEWS_LIKES WHERE user_id = :user_id AND review_id= :review_id";
         jdbcOperations.update(sql, params);
+        saveEvent(userId, id, "LIKE", "REMOVE");
         return getById(id).get();
     }
 
+    private void saveEvent(long userId, long entityId, String eventType, String operation) {
+        Map<String, Object> eventValues = new HashMap<>();
+        eventValues.put("userId", userId);
+        eventValues.put("entityId", entityId);
+        eventValues.put("eventType", eventType);
+        eventValues.put("operation", operation);
 
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
+        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
+                " VALUES(:userId,:entityId,:eventType,:operation)";
+        jdbcOperations.update(query, params, keyHolder);
+    }
 }
