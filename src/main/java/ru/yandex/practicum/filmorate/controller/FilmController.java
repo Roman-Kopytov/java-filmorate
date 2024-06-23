@@ -7,11 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.pathHandler.SearchParameters;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -56,10 +56,20 @@ public class FilmController {
         return updatedFilm;
     }
 
+    @GetMapping("/search")
+    @Validated
+    public List<FilmDto> searchBy(@RequestParam(name = "query") String query,
+                                  @RequestParam(name = "by", defaultValue = "director,title") String by) {
+        log.info("==>GET /search?query={}&by={}", query, by);
+        return filmService.searchBy(query, SearchParameters.by(by));
+    }
+
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
-        log.info("==>GET /popular?count={}", count);
-        return filmService.getPopularFilms(count);
+    public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count,
+                                             @RequestParam(name = "genreId", required = false) Long genreId,
+                                             @RequestParam(name = "year", required = false) Integer year) {
+        log.info("==>GET /popular/count={}&genreId={}&year={}", count, genreId, year);
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @GetMapping("director/{directorId}")
@@ -78,5 +88,14 @@ public class FilmController {
     public void deleteLike(@PathVariable("filmId") @Min(0) long filmId, @PathVariable("userId") @Min(0) long userId) {
         log.info("==>DELETE /films/{}/like/{}", filmId, userId);
         filmService.deleteLike(userId, filmId);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonsFilms(
+            @RequestParam(value = "userId") long userId,
+            @RequestParam(value = "friendId") long friendId
+    ) {
+        log.info("==>GET /films/common for userId: {} and friendId: {}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }

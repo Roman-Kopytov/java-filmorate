@@ -4,12 +4,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 public interface FilmRepository {
 
-    Film getById(long filmId);
+    Optional<Film> getById(long filmId);
 
     Film save(Film film);
 
@@ -17,13 +16,13 @@ public interface FilmRepository {
 
     List<Film> getAll();
 
-    Map<Long, Set<Long>> getLikes();
-
     void addLike(Film film, User user);
 
     void deleteLike(Film film, User user);
 
-    List<Film> getTopPopular(int count);
-
     List<Film> getSortedFilmsByDirector(long directorId, String sortBy);
+
+    List<Film> searchBy(String query, String by);
+
+    List<Film> getTopPopular(int count, Long genreId, Integer year);
 }

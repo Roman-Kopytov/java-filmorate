@@ -6,25 +6,29 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.EventRowMapper;
+import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class JdbcUserRepository implements UserRepository {
     private final NamedParameterJdbcOperations jdbcOperations;
     private final UserRowMapper userRowMapper;
+    private final LikesRowMapper likesRowMapper;
 
     @Override
-    public User getById(long userId) {
-        return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
-                Map.of("userId", userId), userRowMapper);
+    public Optional<User> getById(long userId) {
+        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
+                Map.of("userId", userId), userRowMapper));
     }
 
     @Override
@@ -113,4 +117,10 @@ public class JdbcUserRepository implements UserRepository {
         return jdbcOperations.query("SELECT * FROM FEED WHERE user_id =:userId",
                 Map.of("userId", id), new EventRowMapper());
     }
+    @Override
+    public List<Like> getMapUserLikeFilm() {
+        final String query = "SELECT * FROM likes";
+        return jdbcOperations.query(query, likesRowMapper);
+    }
+
 }
