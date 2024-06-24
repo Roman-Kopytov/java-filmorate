@@ -11,9 +11,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-/**
- * Film.
- */
+
 @Data
 @EqualsAndHashCode(of = "id")
 @NoArgsConstructor
