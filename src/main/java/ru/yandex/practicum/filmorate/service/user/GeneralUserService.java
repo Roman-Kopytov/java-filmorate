@@ -29,6 +29,52 @@ public class GeneralUserService implements UserService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
 
+    private static List<FilmDto> getFilmDtos(List<Long> listLongFilms, List<Film> filmList) {
+        final List<FilmDto> recommendedFilms = new ArrayList<>();
+        for (Long l : listLongFilms) {
+            for (Film f : filmList) {
+                if (f.getId().equals(l)) {
+                    FilmDto filmDto = FilmMapper.mapToFilmDto(f);
+                    if (!recommendedFilms.contains(filmDto))
+                        recommendedFilms.add(filmDto);
+                }
+            }
+        }
+        return recommendedFilms;
+    }
+
+    private static List<Long> getLongs(List<Like> likesList, List<Long> idFilms, Long id) {
+        final List<Long> similarUser = new ArrayList<>();
+        for (Like like : likesList) {
+            if (like.getUserId().equals(id)) {
+                continue;
+            }
+            for (Long l : idFilms) {
+                if (similarUser.contains(like.getUserId())) {
+                    continue;
+                }
+                if (l.equals(like.getFilmId())) {
+                    similarUser.add(like.getUserId());
+                }
+            }
+        }
+
+        final List<Long> listLongFilms = new ArrayList<>();
+        for (Like like : likesList) {
+            if (like.getUserId().equals(id)) {
+                continue;
+            }
+            for (Long l : similarUser) {
+                if (l.equals(like.getUserId())) {
+                    if (!idFilms.contains(like.getFilmId())) {
+                        listLongFilms.add(like.getFilmId());
+                    }
+                }
+            }
+        }
+        return listLongFilms;
+    }
+
     @Override
     public UserDto create(User user) {
         if (user.getName() == null || user.getName().isEmpty()) {
@@ -105,20 +151,6 @@ public class GeneralUserService implements UserService {
         return user;
     }
 
-    private static List<FilmDto> getFilmDtos(List<Long> listLongFilms, List<Film> filmList) {
-        final List<FilmDto> recommendedFilms = new ArrayList<>();
-        for (Long l : listLongFilms) {
-            for (Film f : filmList) {
-                if (f.getId().equals(l)) {
-                    FilmDto filmDto = FilmMapper.mapToFilmDto(f);
-                    if (!recommendedFilms.contains(filmDto))
-                        recommendedFilms.add(filmDto);
-                }
-            }
-        }
-        return recommendedFilms;
-    }
-
     @Override
     public List<FilmDto> getRecommendations(Long id) {
         final List<Like> likesList = userRepository.getMapUserLikeFilm();
@@ -131,38 +163,6 @@ public class GeneralUserService implements UserService {
         }
         final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
         return getFilmDtos(listLongFilms, filmList);
-    }
-
-    private static List<Long> getLongs(List<Like> likesList, List<Long> idFilms, Long id) {
-        final List<Long> similarUser = new ArrayList<>();
-        for (Like like : likesList) {
-            if (like.getUserId().equals(id)) {
-                continue;
-            }
-            for (Long l : idFilms) {
-                if (similarUser.contains(like.getUserId())) {
-                    continue;
-                }
-                if (l.equals(like.getFilmId())) {
-                    similarUser.add(like.getUserId());
-                }
-            }
-        }
-
-        final List<Long> listLongFilms = new ArrayList<>();
-        for (Like like : likesList) {
-            if (like.getUserId().equals(id)) {
-                continue;
-            }
-            for (Long l : similarUser) {
-                if (l.equals(like.getUserId())) {
-                    if (!idFilms.contains(like.getFilmId())) {
-                        listLongFilms.add(like.getFilmId());
-                    }
-                }
-            }
-        }
-        return listLongFilms;
     }
 
     @Override

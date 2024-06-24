@@ -19,11 +19,11 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -65,7 +65,7 @@ public class GeneralFilmService implements FilmService {
                 .orElseThrow(() -> new NotFoundException(String.format("Фильм с ID %d не найден", id)));
         filmRepository.deleteFilmById(id);
         log.info(String.format("Фильм с ID %d был успешно удален", id));
-        return FilmMapper.mapToUserDto(film);
+        return FilmMapper.mapToFilmDto(film);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class GeneralFilmService implements FilmService {
         if (isGenresValid(film) && isMpaValid(film)) {
             filmRepository.getById(film.getId())
                     .orElseThrow(() -> new NotFoundException(String.format("Фильс с ID %d не найден", film.getId())));
-            return FilmMapper.mapToUserDto(filmRepository.update(film));
+            return FilmMapper.mapToFilmDto(filmRepository.update(film));
         }
         return null;
     }

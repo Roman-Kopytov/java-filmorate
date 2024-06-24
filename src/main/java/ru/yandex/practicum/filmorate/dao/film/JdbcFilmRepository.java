@@ -26,7 +26,7 @@ public class JdbcFilmRepository implements FilmRepository {
     @Override
     public Optional<Film> getById(long filmId) {
         return Optional.ofNullable(jdbcOperations.query(
-                    """
+                """
                         SELECT FILMS.FILM_ID, FILMS.NAME, FILMS.DESCRIPTION, FILMS.RELEASE_DATE,
                         FILMS.DURATION, MPA.MPA_ID, MPA.NAME,
                         DIRECTORS.DIRECTOR_ID, DIRECTORS.NAME, GENRES.GENRE_ID, GENRES.NAME
@@ -61,7 +61,7 @@ public class JdbcFilmRepository implements FilmRepository {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValues(map);
         jdbcOperations.update(
-                    """
+                """
                         INSERT INTO FILMS (name,description,release_Date,duration,MPA_ID)
                         VALUES(:name,:description,:releaseDate,:duration,:MPA_ID)
                         """,
@@ -127,10 +127,10 @@ public class JdbcFilmRepository implements FilmRepository {
         params.addValues(map);
         jdbcOperations.update(
                 """
-                UPDATE FILMS
-                SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
-                WHERE FILM_ID=:filmId
-                """, params);
+                        UPDATE FILMS
+                        SET NAME=:name,DESCRIPTION=:description, RELEASE_DATE=:releaseDate,DURATION=:duration,MPA_ID=:MPA_ID
+                        WHERE FILM_ID=:filmId
+                        """, params);
         cleanFilmGenres(film);
         saveFilmGenres(film);
         cleanDirectorsFromFilm(film);
@@ -268,6 +268,7 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
         return films;
     }
+
     @Override
     public List<Film> searchBy(String query, String by) {
         return switch (by) {
