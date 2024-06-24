@@ -33,16 +33,6 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Review update(Review review) {
-        if (review.getReviewId() == null) {
-            Map<String, Object> map = Map.of("user_id", review.getUserId(),
-                    "film_id", review.getFilmId());
-            review.setReviewId(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
-                    "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
-                    "WHERE r.user_id =:user_id AND r.film_id = :film_id " +
-                    "GROUP BY r.REVIEW_ID", new MapSqlParameterSource(map), reviewRowMapper).getReviewId());
-
-        }
-
         Map<String, Object> map = Map.of("ID", review.getReviewId(),
                 "CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
