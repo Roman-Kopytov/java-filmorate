@@ -43,7 +43,8 @@ public class JdbcDirectorRepository implements DirectorRepository {
                 .getKeys();
 
         log.info("Создан новый режиссер с id {}", columns.get("DIRECTOR_ID"));
-        return new Director((Long) columns.get("DIRECTOR_ID"), director.getName());
+        director.setId((Long) columns.get("DIRECTOR_ID"));
+        return director;
     }
 
     public Director update(Director director) {

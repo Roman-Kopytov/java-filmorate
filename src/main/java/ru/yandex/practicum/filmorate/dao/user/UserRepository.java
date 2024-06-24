@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.user;
 
-import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -15,6 +15,8 @@ public interface UserRepository {
     User save(User user);
 
     User update(User user);
+
+    void deleteUser(long userId);
 
     List<User> getUserFriends(User user);
 

@@ -32,6 +32,8 @@ public interface FilmService {
 
     FilmDto getById(long id);
 
+    FilmDto deleteFilmById(long id);
+
     List<FilmDto> searchBy(String query, String by);
 
     List<FilmDto> getPopularFilms(int count, Long genreId, Integer year);

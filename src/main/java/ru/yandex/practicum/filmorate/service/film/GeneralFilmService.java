@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
@@ -25,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralFilmService implements FilmService {
@@ -50,6 +53,21 @@ public class GeneralFilmService implements FilmService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Метод на удаление фильма
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public FilmDto deleteFilmById(long id) {
+        Film film = filmRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с ID %d не найден", id)));
+        filmRepository.deleteFilmById(id);
+        log.info(String.format("Фильм с ID %d был успешно удален", id));
+        return FilmMapper.mapToFilmDto(film);
+    }
+
     @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
@@ -61,8 +79,8 @@ public class GeneralFilmService implements FilmService {
     @Override
     public FilmDto update(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            long filmId = film.getId();
-            getFilmFromRepository(filmId);
+            filmRepository.getById(film.getId())
+                    .orElseThrow(() -> new NotFoundException(String.format("Фильс с ID %d не найден", film.getId())));
             return FilmMapper.mapToFilmDto(filmRepository.update(film));
         }
         return null;
@@ -101,7 +119,7 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
-        Film film = mapRowToFilm(rs,rowNum);
+        Film film = mapRowToFilm(rs, rowNum);
         film.setGenres(getAllGenresByFilmId(rs.getInt("id")));
         return film;
     }
@@ -138,12 +156,13 @@ public class GeneralFilmService implements FilmService {
     }
 
     private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-        return new Mpa(rs.getInt("MPA_ID"), rs.getString("NAME"));
+        return new Mpa(rs.getString("NAME"), rs.getInt("MPA_ID"));
     }
 
 
     private Film getFilmFromRepository(long filmId) {
-        return filmRepository.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return filmRepository.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
@@ -181,7 +200,7 @@ public class GeneralFilmService implements FilmService {
             return true;
         }
         List<Long> filmGenreIds = film.getGenres().stream()
-                .map(Genre::getId)
+                .map(g -> g.getId())
                 .toList();
 
         List<Genre> genres = genreRepository.findByIds(filmGenreIds);
