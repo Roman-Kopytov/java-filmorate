@@ -6,9 +6,12 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 import java.util.Optional;
 
+
 public interface FilmRepository {
 
     Optional<Film> getById(long filmId);
+
+    void deleteFilmById(long id);
 
     Film save(Film film);
 
@@ -25,4 +28,6 @@ public interface FilmRepository {
     List<Film> searchBy(String query, String by);
 
     List<Film> getTopPopular(int count, Long genreId, Integer year);
+
+    List<Film> getCommonFilms(long userId, long friendId);
 }

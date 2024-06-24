@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.dto.EventDto;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
@@ -81,6 +82,18 @@ public class UserController {
                                           @PathVariable("otherId") @Min(0) long otherId) {
         log.info("==>GET /users  {}", id);
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @DeleteMapping("{id}")
+    public User deleteUser(@PathVariable("id") @Min(0) long id) {
+        log.info("==>DELETE /users  {}", id);
+        return userService.deleteUserById(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<EventDto> getFeed(@PathVariable long id) {
+        log.info("==>GET /users/{}/feed", id);
+        return userService.getFeed(id);
     }
 
 }

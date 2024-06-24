@@ -5,15 +5,14 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.EventRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,13 +24,18 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public Optional<User> getById(long userId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
-                Map.of("userId", userId), userRowMapper));
+        return Optional.ofNullable(jdbcOperations.queryForObject("""
+                SELECT * FROM users
+                WHERE user_id =:userId
+                """, Map.of("userId", userId), userRowMapper));
     }
 
     @Override
     public List<User> getAll() {
-        return jdbcOperations.query("SELECT * FROM users ORDER BY USER_ID ", userRowMapper);
+        return jdbcOperations.query("""
+                SELECT * FROM users
+                ORDER BY USER_ID
+                """, userRowMapper);
     }
 
     @Override
@@ -42,8 +46,10 @@ public class JdbcUserRepository implements UserRepository {
                 "NAME", user.getName(),
                 "BIRTHDAY", user.getBirthday());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY)" +
-                " VALUES(:EMAIL,:LOGIN,:NAME,:BIRTHDAY)";
+        String sql = """
+                INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY)
+                VALUES(:EMAIL,:LOGIN,:NAME,:BIRTHDAY)
+                """;
         jdbcOperations.update(sql, params, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         return user;
@@ -57,23 +63,39 @@ public class JdbcUserRepository implements UserRepository {
                 "NAME", user.getName(),
                 "BIRTHDAY", user.getBirthday());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "UPDATE USERS" +
-                " SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY WHERE USER_ID=:ID";
+        String sql = """
+                UPDATE USERS
+                SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY
+                WHERE USER_ID=:ID""";
         jdbcOperations.update(sql, params);
         return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
                 Map.of("userId", user.getId()), userRowMapper);
     }
 
     @Override
+    public void deleteUser(long userId) {
+        jdbcOperations.update("""
+                DELETE FROM USERS
+                WHERE USER_ID = :userId
+                """, Map.of("userId", userId));
+    }
+
+    @Override
     public List<User> getUserFriends(User user) {
-        return jdbcOperations.query("SELECT * FROM USERS WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)",
-                Map.of("userId", user.getId()), userRowMapper);
+        return jdbcOperations.query("""
+                SELECT * FROM USERS
+                WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP
+                                  WHERE USER_ID = :userId)
+                """, Map.of("userId", user.getId()), userRowMapper);
     }
 
     @Override
     public List<User> getCommonFriends(User user, User otherUser) {
-        String sql = "SELECT * from USERS u WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)" +
-                " AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)";
+        String sql = """
+                SELECT * from USERS u
+                WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)
+                AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)
+                """;
         return jdbcOperations.query(sql,
                 Map.of("userId", user.getId(),
                         "otherUserId", otherUser.getId()), userRowMapper);
@@ -81,15 +103,47 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public void addFriend(User user, User friend) {
-        jdbcOperations.update("INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID) " +
-                        "VALUES (:userId,:friendId)",
+        jdbcOperations.update("""
+                        INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID)
+                        VALUES (:userId,:friendId)
+                        """,
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
+
+        saveEvent(user.getId(), friend.getId(), "FRIEND", "ADD");
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
+        jdbcOperations.update("""
+                DElETE FROM FRIENDSHIP
+                WHERE user_id = :userId AND friend_id = :friendId
+                """, Map.of("userId", user.getId(), "friendId", friend.getId()));
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
+
+        saveEvent(user.getId(), friend.getId(), "FRIEND", "REMOVE");
+    }
+
+    private void saveEvent(long userId, long entityId, String eventType, String operation) {
+        Map<String, Object> eventValues = new HashMap<>();
+        eventValues.put("userId", userId);
+        eventValues.put("entityId", entityId);
+        eventValues.put("eventType", eventType);
+        eventValues.put("operation", operation);
+
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
+        String query = """
+                INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)
+                VALUES(:userId,:entityId,:eventType,:operation)
+                """;
+        jdbcOperations.update(query, params, keyHolder);
+    }
+
+    @Override
+    public List<Event> getFeed(long id) {
+        return jdbcOperations.query("SELECT * FROM FEED WHERE user_id =:userId",
+                Map.of("userId", id), new EventRowMapper());
     }
 
     @Override

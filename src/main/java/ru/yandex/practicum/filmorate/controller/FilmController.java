@@ -37,6 +37,14 @@ public class FilmController {
         return savedFilm;
     }
 
+    @DeleteMapping("/{id}")
+    public FilmDto deleteFilmById(@PathVariable("id") long id) {
+        log.info("==>DELETE films/{}", id);
+        FilmDto deletedFilm = filmService.deleteFilmById(id);
+        log.info("DELETE /films/{} <== {}", id, deletedFilm);
+        return deletedFilm;
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
@@ -66,8 +74,8 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count,
-                                             @RequestParam(name = "genreId", required = false) Long genreId,
-                                             @RequestParam(name = "year", required = false) Integer year) {
+                                         @RequestParam(name = "genreId", required = false) Long genreId,
+                                         @RequestParam(name = "year", required = false) Integer year) {
         log.info("==>GET /popular/count={}&genreId={}&year={}", count, genreId, year);
         return filmService.getPopularFilms(count, genreId, year);
     }
@@ -91,7 +99,7 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonsFilms(
+    public List<FilmDto> getCommonsFilms(
             @RequestParam(value = "userId") long userId,
             @RequestParam(value = "friendId") long friendId
     ) {

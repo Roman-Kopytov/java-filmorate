@@ -8,16 +8,14 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class Review {
-    @NotNull
+    @NotNull(groups = Marker.Update.class)
     Long reviewId;
     String content;
     @NotNull
     Boolean isPositive;
     @NotNull
-    @Positive
     Long userId;
     @NotNull
-    @Positive
     Long filmId;
     int useful = 0;
 

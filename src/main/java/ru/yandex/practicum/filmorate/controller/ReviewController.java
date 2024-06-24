@@ -25,7 +25,7 @@ public class ReviewController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
-    public Review create(@RequestBody Review review) {
+    public Review create(@Valid @RequestBody Review review) {
         log.info("==>POST /review  {}", review);
         Review newReview = reviewService.create(review);
         log.info("POST /review <== {}", newReview);

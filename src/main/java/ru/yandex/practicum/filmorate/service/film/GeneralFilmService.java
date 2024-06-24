@@ -1,31 +1,27 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.director.DirectorRepository;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
-import ru.yandex.practicum.filmorate.dao.film.JdbcFilmRepository;
 import ru.yandex.practicum.filmorate.dao.genre.GenreRepository;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.validate.Validate;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralFilmService implements FilmService {
@@ -33,11 +29,8 @@ public class GeneralFilmService implements FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
+    private final DirectorRepository directorRepository;
     private final MpaRepository mpaRepository;
-    private final JdbcTemplate jdbcTemplate;
-    private final FilmRowMapper filmRowMapper;
-    private final JdbcFilmRepository jdbcFilmRepository;
-    private final Validate validate;
 
     @Override
     public FilmDto getById(long id) {
@@ -52,6 +45,15 @@ public class GeneralFilmService implements FilmService {
     }
 
     @Override
+    public FilmDto deleteFilmById(long id) {
+        Film film = filmRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с ID %d не найден", id)));
+        filmRepository.deleteFilmById(id);
+        log.info(String.format("Фильм с ID %d был успешно удален", id));
+        return FilmMapper.mapToFilmDto(film);
+    }
+
+    @Override
     public FilmDto create(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
             return FilmMapper.mapToFilmDto(filmRepository.save(film));
@@ -62,8 +64,8 @@ public class GeneralFilmService implements FilmService {
     @Override
     public FilmDto update(Film film) {
         if (isGenresValid(film) && isMpaValid(film)) {
-            long filmId = film.getId();
-            getFilmFromRepository(filmId);
+            filmRepository.getById(film.getId())
+                    .orElseThrow(() -> new NotFoundException(String.format("Фильс с ID %d не найден", film.getId())));
             return FilmMapper.mapToFilmDto(filmRepository.update(film));
         }
         return null;
@@ -90,65 +92,17 @@ public class GeneralFilmService implements FilmService {
         filmRepository.deleteLike(getFilmFromRepository(filmId), getUserFromRepository(userId));
     }
 
-    @Override
-    public List<Film> getCommonFilms(long userId, long friendId) {
-        String sqlQuery = " SELECT f.FILM_ID AS id, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
-                "f.MPA_ID, m.NAME AS mpa_name " +
-                "FROM FILMS AS f " +
-                "JOIN MPA AS m ON m.MPA_ID = f.MPA_ID " +
-                "JOIN LIKES AS l ON f.FILM_ID = l.FILM_ID " +
-                "JOIN LIKES AS lf ON f.FILM_ID = lf.FILM_ID " +
-                "WHERE l.USER_ID = ? AND lf.USER_ID = ? " +
-                "GROUP BY f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME " +
-                "ORDER BY f.NAME";
-
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilmWithGenres, userId, friendId);
-    }
-
-    private Film mapRowToFilmWithGenres(ResultSet rs, int rowNum) throws SQLException {
-        Film film = mapRowToFilm(rs,rowNum);
-        film.setGenres(getAllGenresByFilmId(rs.getInt("id")));
-        return film;
-    }
 
     @Override
-    public LinkedHashSet<Genre> getAllGenresByFilmId(int filmId) {
-        String sqlQuery = "SELECT fg.GENRE_ID AS id, g.NAME AS name \n" +
-                "FROM FILMS_GENRES AS fg\n" +
-                "INNER JOIN GENRES AS g ON fg.GENRE_ID = g.GENRE_ID\n" +
-                "WHERE fg.FILM_ID = ?\n" +
-                "ORDER BY fg.GENRE_ID;";
-        return new LinkedHashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToGenre, filmId));
+    public List<FilmDto> getCommonFilms(long userId, long friendId) {
+        return filmRepository.getCommonFilms(userId, friendId).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
-
-    private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getLong("id"), rs.getString("name"));
-    }
-
-    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
-        Film film = new Film();
-        film.setId(rs.getLong("id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setMpa(getMpaById(rs.getInt("mpa_id")));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getLong("duration"));
-        return film;
-    }
-
-    @Override
-    public Mpa getMpaById(int id) {
-        String sqlQuery = "SELECT MPA_ID, NAME FROM MPA WHERE MPA_ID = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMpa, id);
-    }
-
-    private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-        return new Mpa(rs.getInt("MPA_ID"), rs.getString("NAME"));
-    }
-
 
     private Film getFilmFromRepository(long filmId) {
-        return filmRepository.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
+        return filmRepository.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Film not found with id: " + filmId));
     }
 
     private User getUserFromRepository(long userId) {
@@ -167,10 +121,15 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
-        List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
-        return films.stream()
-                .map(FilmMapper::mapToFilmDto)
-                .collect(Collectors.toList());
+        Optional<Director> director = Optional.ofNullable(directorRepository.getById(directorId));
+        if (director.isEmpty()) {
+            throw new NotFoundException("Director not found with ID:" + directorId);
+        } else {
+            List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
+            return films.stream()
+                    .map(FilmMapper::mapToFilmDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     private boolean isMpaValid(Film film) {
@@ -186,7 +145,7 @@ public class GeneralFilmService implements FilmService {
             return true;
         }
         List<Long> filmGenreIds = film.getGenres().stream()
-                .map(Genre::getId)
+                .map(g -> g.getId())
                 .toList();
 
         List<Genre> genres = genreRepository.findByIds(filmGenreIds);
