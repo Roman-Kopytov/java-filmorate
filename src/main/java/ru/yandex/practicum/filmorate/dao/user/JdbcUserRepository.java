@@ -133,8 +133,10 @@ public class JdbcUserRepository implements UserRepository {
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
-        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
-                " VALUES(:userId,:entityId,:eventType,:operation)";
+        String query = """
+                INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)
+                VALUES(:userId,:entityId,:eventType,:operation)
+                """;
         jdbcOperations.update(query, params, keyHolder);
     }
 

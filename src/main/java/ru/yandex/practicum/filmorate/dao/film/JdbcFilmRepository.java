@@ -225,53 +225,55 @@ public class JdbcFilmRepository implements FilmRepository {
         String query = null;
         List<Film> films;
         if (year == null && genreId == null) {
-            query = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
-                    "FILMS.MPA_ID, MPA.NAME " +
-                    "FROM FILMS " +
-                    "LEFT JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
-                    "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
-                    "GROUP BY FILMS.FILM_ID " +
-                    "ORDER BY COUNT(LIKES.USER_ID) desc " +
-                    "LIMIT :count";
+            query = """
+                    SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
+                    FILMS.MPA_ID, MPA.NAME
+                    FROM FILMS
+                    LEFT JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
+                    LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID
+                    GROUP BY FILMS.FILM_ID
+                    ORDER BY COUNT(LIKES.USER_ID) desc
+                    LIMIT :count
+                    """;
             films = jdbcOperations.query(query, Map.of("count", count), new FilmRowMapper());
         } else if (year != null && genreId == null) {
-            query = "SELECT f.FILM_ID, " +
-                    "f.NAME, " +
-                    "f.DESCRIPTION, " +
-                    "f.RELEASE_DATE, " +
-                    "f.DURATION, " +
-                    "f.MPA_ID, " +
-                    "m.NAME " +
-                    "FROM FILMS f " +
-                    "LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
-                    "WHERE EXTRACT (YEAR FROM f.RELEASE_DATE) = :year " +
-                    "GROUP BY f.FILM_ID " +
-                    "ORDER BY COUNT(l.USER_ID) DESC " +
-                    "LIMIT :count";
+            query = """
+                    SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME
+                    FROM FILMS f
+                    LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID
+                    LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID
+                    WHERE EXTRACT (YEAR FROM f.RELEASE_DATE) = :year
+                    GROUP BY f.FILM_ID
+                    ORDER BY COUNT(l.USER_ID) DESC
+                    LIMIT :count
+                    """;
             films = jdbcOperations.query(query, Map.of("count", count, "year", year), new FilmRowMapper());
         } else if (genreId != null && year == null) {
-            query = "SELECT f.*, m.name FROM films f " +
-                    "LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID =fg.FILM_ID " +
-                    "LEFT JOIN genres g ON fg.GENRE_ID = g.GENRE_ID " +
-                    "WHERE g.GENRE_ID =:genreId " +
-                    "GROUP BY f.FILM_ID " +
-                    "ORDER BY COUNT(l.USER_ID) DESC " +
-                    "LIMIT :count";
+            query = """
+                    SELECT f.*, m.name FROM films f
+                    LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID
+                    LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID
+                    LEFT JOIN FILMS_GENRES fg ON f.FILM_ID =fg.FILM_ID
+                    LEFT JOIN genres g ON fg.GENRE_ID = g.GENRE_ID
+                    WHERE g.GENRE_ID =:genreId
+                    GROUP BY f.FILM_ID
+                    ORDER BY COUNT(l.USER_ID) DESC
+                    LIMIT :count
+                    """;
             films = jdbcOperations.query(query,
                     Map.of("genreId", genreId, "count", count), new FilmRowMapper());
         } else {
-            query = "SELECT f.*, m.MPA_ID, m.NAME FROM films f " +
-                    "LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID =fg.FILM_ID " +
-                    "LEFT JOIN genres g ON fg.GENRE_ID = g.GENRE_ID " +
-                    "WHERE g.GENRE_ID =:genreId AND EXTRACT (YEAR FROM f.RELEASE_DATE) =:year " +
-                    "GROUP BY f.FILM_ID " +
-                    "ORDER BY COUNT(l.USER_ID) DESC " +
-                    "LIMIT :count";
+            query = """
+                    SELECT f.*, m.MPA_ID, m.NAME FROM films f
+                    LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID
+                    LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID
+                    LEFT JOIN FILMS_GENRES fg ON f.FILM_ID =fg.FILM_ID
+                    LEFT JOIN genres g ON fg.GENRE_ID = g.GENRE_ID
+                    WHERE g.GENRE_ID =:genreId AND EXTRACT (YEAR FROM f.RELEASE_DATE) =:year
+                    GROUP BY f.FILM_ID
+                    ORDER BY COUNT(l.USER_ID) DESC
+                    LIMIT :count
+                    """;
             films = jdbcOperations.query(query,
                     Map.of("genreId", genreId, "year", year, "count", count), new FilmRowMapper());
         }
