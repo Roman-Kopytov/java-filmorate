@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.director.DirectorRepository;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.film.JdbcFilmRepository;
@@ -14,16 +15,14 @@ import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -35,6 +34,7 @@ public class GeneralFilmService implements FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
+    private final DirectorRepository directorRepository;
     private final MpaRepository mpaRepository;
     private final JdbcTemplate jdbcTemplate;
     private final FilmRowMapper filmRowMapper;
@@ -181,10 +181,15 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
-        List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
-        return films.stream()
-                .map(FilmMapper::mapToFilmDto)
-                .collect(Collectors.toList());
+        Optional<Director> director = Optional.ofNullable(directorRepository.getById(directorId));
+        if (director.isEmpty()) {
+            throw new NotFoundException("Director not found with ID:" + directorId);
+        } else {
+            List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
+            return films.stream()
+                    .map(FilmMapper::mapToFilmDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     private boolean isMpaValid(Film film) {
