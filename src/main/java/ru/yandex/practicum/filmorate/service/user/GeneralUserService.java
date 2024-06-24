@@ -29,21 +29,22 @@ public class GeneralUserService implements UserService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
 
-    private static List<FilmDto> getFilmDtos(List<Long> listLongFilms, List<Film> filmList) {
+    private static List<FilmDto> getFilmDtos(final List<Long> listLongFilms, final List<Film> filmList) {
         final List<FilmDto> recommendedFilms = new ArrayList<>();
         for (Long l : listLongFilms) {
             for (Film f : filmList) {
                 if (f.getId().equals(l)) {
                     FilmDto filmDto = FilmMapper.mapToFilmDto(f);
-                    if (!recommendedFilms.contains(filmDto))
+                    if (!recommendedFilms.contains(filmDto)) {
                         recommendedFilms.add(filmDto);
+                    }
                 }
             }
         }
         return recommendedFilms;
     }
 
-    private static List<Long> getLongs(List<Like> likesList, List<Long> idFilms, Long id) {
+    private static List<Long> getLongs(final List<Like> likesList, final List<Long> idFilms, final Long id) {
         final List<Long> similarUser = new ArrayList<>();
         for (Like like : likesList) {
             if (like.getUserId().equals(id)) {
@@ -76,7 +77,7 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public UserDto create(User user) {
+    public UserDto create(final User user) {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
@@ -84,9 +85,9 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public UserDto update(User user) {
+    public UserDto update(final User user) {
         long userId = user.getId();
-        Optional<User> savedUSer = (userRepository.getById(userId));
+        Optional<User> savedUSer = userRepository.getById(userId);
         if (savedUSer.isEmpty()) {
             throw new NotFoundException("User not found with id: " + userId);
         }
@@ -94,38 +95,38 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public UserDto get(long userId) {
+    public UserDto get(final long userId) {
         return UserMapper.mapToUserDto((userRepository.getById(userId))
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId)));
     }
 
     @Override
-    public void addFriend(long userId, long friendId) {
+    public void addFriend(final long userId, final long friendId) {
         userRepository.addFriend(getUserFromRepository(userId), getUserFromRepository(friendId));
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
+    public void deleteFriend(final long userId, final long friendId) {
         userRepository.deleteFriend(getUserFromRepository(userId), getUserFromRepository(friendId));
     }
 
-    private User getUserFromRepository(long userId) {
+    private User getUserFromRepository(final long userId) {
         return userRepository.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     @Override
-    public List<UserDto> getCommonFriends(long id, long otherId) {
+    public List<UserDto> getCommonFriends(final long id, final long otherId) {
         List<User> commonFriends = userRepository.getCommonFriends(getUserFromRepository(id), getUserFromRepository(otherId));
         return commonFriends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     @Override
-    public List<UserDto> getUserFriends(long id) {
+    public List<UserDto> getUserFriends(final long id) {
         return getFriendsFromRepository(id).stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
-    private List<User> getFriendsFromRepository(long id) {
+    private List<User> getFriendsFromRepository(final long id) {
         return userRepository.getUserFriends(getUserFromRepository(id));
     }
 
@@ -143,7 +144,7 @@ public class GeneralUserService implements UserService {
      * Потом его данные удаляются
      */
     @Override
-    public User deleteUserById(long id) {
+    public User deleteUserById(final long id) {
         User user = userRepository.getById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID: " + id + " не найден"));
         userRepository.deleteUser(id);
@@ -152,7 +153,7 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<FilmDto> getRecommendations(Long id) {
+    public List<FilmDto> getRecommendations(final long id) {
         final List<Like> likesList = userRepository.getMapUserLikeFilm();
         final List<Film> filmList = filmRepository.getAll();
         final List<Long> idFilms = new ArrayList<>();
@@ -166,7 +167,7 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<EventDto> getFeed(long id) {
+    public List<EventDto> getFeed(final long id) {
         return userRepository.getFeed(id).stream().map(EventMapper::mapToEventDto).toList();
     }
 }

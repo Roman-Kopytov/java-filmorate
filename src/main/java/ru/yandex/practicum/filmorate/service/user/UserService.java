@@ -29,7 +29,7 @@ public interface UserService {
 
     User deleteUserById(long id);
 
-    List<FilmDto> getRecommendations(Long id);
+    List<FilmDto> getRecommendations(long id);
 
     List<EventDto> getFeed(long id);
 }

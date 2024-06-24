@@ -222,35 +222,64 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getTopPopular(int count, Long genreId, Integer year) {
-        final List<Genre> genres = getAllGenres();
-        final List<Director> directors = getAllDirectors();
-        final List<Film> films = jdbcOperations.query(
-                """
-                        SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
-                        FILMS.MPA_ID, MPA.NAME
-                        FROM FILMS
-                        JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID
-                        LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID
-                        GROUP BY FILMS.FILM_ID
-                        ORDER BY COUNT(LIKES.USER_ID) desc
-                        LIMIT :count
-                        """,
-                Map.of("count", count), new FilmRowMapper());
-        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
-
-        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-        return films;
+        String query = null;
+        List<Film> films;
+        if (year == null && genreId == null) {
+            query = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+                    "FILMS.MPA_ID, MPA.NAME " +
+                    "FROM FILMS " +
+                    "LEFT JOIN MPA on FILMS.MPA_ID = MPA.MPA_ID " +
+                    "LEFT JOIN LIKES on FILMS.FILM_ID = LIKES.FILM_ID " +
+                    "GROUP BY FILMS.FILM_ID " +
+                    "ORDER BY COUNT(LIKES.USER_ID) desc " +
+                    "LIMIT :count";
+            films = jdbcOperations.query(query, Map.of("count", count), new FilmRowMapper());
+        } else if (year != null && genreId == null) {
+            query = "SELECT f.FILM_ID, " +
+                    "f.NAME, " +
+                    "f.DESCRIPTION, " +
+                    "f.RELEASE_DATE, " +
+                    "f.DURATION, " +
+                    "f.MPA_ID, " +
+                    "m.NAME " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                    "LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
+                    "WHERE EXTRACT (YEAR FROM f.RELEASE_DATE) = :year " +
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY COUNT(l.USER_ID) DESC " +
+                    "LIMIT :count";
+            films = jdbcOperations.query(query, Map.of("count", count, "year", year), new FilmRowMapper());
+        } else if (genreId != null && year == null) {
+            query = "SELECT f.*, m.name FROM films f " +
+                    "LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                    "LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID =fg.FILM_ID " +
+                    "LEFT JOIN genres g ON fg.GENRE_ID = g.GENRE_ID " +
+                    "WHERE g.GENRE_ID =:genreId " +
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY COUNT(l.USER_ID) DESC " +
+                    "LIMIT :count";
+            films = jdbcOperations.query(query,
+                    Map.of("genreId", genreId, "count", count), new FilmRowMapper());
+        } else {
+            query = "SELECT f.*, m.MPA_ID, m.NAME FROM films f " +
+                    "LEFT JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                    "LEFT JOIN LIKES l on f.FILM_ID = l.FILM_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID =fg.FILM_ID " +
+                    "LEFT JOIN genres g ON fg.GENRE_ID = g.GENRE_ID " +
+                    "WHERE g.GENRE_ID =:genreId AND EXTRACT (YEAR FROM f.RELEASE_DATE) =:year " +
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY COUNT(l.USER_ID) DESC " +
+                    "LIMIT :count";
+            films = jdbcOperations.query(query,
+                    Map.of("genreId", genreId, "year", year, "count", count), new FilmRowMapper());
+        }
+        return collectFilmComponent(films);
     }
 
     @Override
     public List<Film> getSortedFilmsByDirector(long directorId, String sortBy) {
-        final List<Genre> genres = getAllGenres();
-        final List<Director> directors = getAllDirectors();
-
-        final Map<Long, LinkedHashSet<Genre>> filmGenres = getAllFilmsGenres(genres);
-        final Map<Long, HashSet<Director>> filmDirectors = getDirectorsByFilmMap(directors);
         final List<Film> films;
         String query = """
                 SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, RELEASE_DATE, DURATION,
@@ -264,9 +293,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 """ + ((sortBy.equals("likes") ?
                 "\nORDER BY COUNT(LIKES.USER_ID) desc" : "ORDER BY FILMS.RELEASE_DATE asc"));
         films = jdbcOperations.query(query, Map.of("directorId", directorId), new FilmRowMapper());
-        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>())));
-        films.forEach(film -> film.setDirectors(filmDirectors.getOrDefault(film.getId(), new HashSet<>())));
-        return films;
+        return collectFilmComponent(films);
     }
 
     @Override
