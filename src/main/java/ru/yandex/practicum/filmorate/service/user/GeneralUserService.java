@@ -168,6 +168,8 @@ public class GeneralUserService implements UserService {
 
     @Override
     public List<EventDto> getFeed(final long id) {
+        User user = userRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID: " + id + " не найден"));
         return userRepository.getFeed(id).stream().map(EventMapper::mapToEventDto).toList();
     }
 }
