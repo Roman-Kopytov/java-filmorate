@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class DirectorController {
     }
 
     @PostMapping
-    public Director create(@RequestBody Director director) {
+    public Director create(@RequestBody @Valid Director director) {
         log.info("==>POST /directors {}", director);
         Director directorToReturn = service.create(director);
         log.info("POST /directors <== {}", directorToReturn);
@@ -43,7 +44,7 @@ public class DirectorController {
     }
 
     @PutMapping
-    public Director update(@RequestBody Director director) {
+    public Director update(@RequestBody @Valid Director director) {
         log.info("==>PUT /directors {}", director);
         Director directorToReturn = service.update(director);
         log.info("PUT /directors <== {}", directorToReturn);
