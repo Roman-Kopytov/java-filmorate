@@ -28,4 +28,6 @@ public interface FilmRepository {
     List<Film> searchBy(String query, String by);
 
     List<Film> getTopPopular(int count, Long genreId, Integer year);
+
+    List<Film> getCommonFilms(long userId, long friendId);
 }

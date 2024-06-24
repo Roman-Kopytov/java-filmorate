@@ -99,7 +99,7 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonsFilms(
+    public List<FilmDto> getCommonsFilms(
             @RequestParam(value = "userId") long userId,
             @RequestParam(value = "friendId") long friendId
     ) {
