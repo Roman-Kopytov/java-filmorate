@@ -64,8 +64,8 @@ public class JdbcUserRepository implements UserRepository {
                 "BIRTHDAY", user.getBirthday());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = """
-                UPDATE USERS 
-                SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY 
+                UPDATE USERS
+                SET EMAIL=:EMAIL,LOGIN=:LOGIN,NAME=:NAME,BIRTHDAY=:BIRTHDAY
                 WHERE USER_ID=:ID""";
         jdbcOperations.update(sql, params);
         return jdbcOperations.queryForObject("SELECT * FROM users WHERE user_id =:userId",
@@ -75,7 +75,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public void deleteUser(long userId) {
         jdbcOperations.update("""
-                DELETE FROM USERS 
+                DELETE FROM USERS
                 WHERE USER_ID = :userId
                 """, Map.of("userId", userId));
     }
@@ -84,7 +84,7 @@ public class JdbcUserRepository implements UserRepository {
     public List<User> getUserFriends(User user) {
         return jdbcOperations.query("""
                 SELECT * FROM USERS
-                WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP 
+                WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP
                                   WHERE USER_ID = :userId)
                 """, Map.of("userId", user.getId()), userRowMapper);
     }
@@ -92,9 +92,9 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public List<User> getCommonFriends(User user, User otherUser) {
         String sql = """
-                SELECT * from USERS u 
+                SELECT * from USERS u
                 WHERE user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :userId)
-                AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)            
+                AND user_id IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = :otherUserId)
                 """;
         return jdbcOperations.query(sql,
                 Map.of("userId", user.getId(),
@@ -115,7 +115,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public void deleteFriend(User user, User friend) {
         jdbcOperations.update("""
-                DElETE FROM FRIENDSHIP 
+                DElETE FROM FRIENDSHIP
                 WHERE user_id = :userId AND friend_id = :friendId
                 """, Map.of("userId", user.getId(), "friendId", friend.getId()));
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
