@@ -8,7 +8,8 @@ import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.List;
+import java.util.Comparator;
+import java.util.LinkedList;
 
 @Service
 @RequiredArgsConstructor
@@ -58,11 +59,13 @@ public class GeneralReviewService implements ReviewService {
     }
 
     @Override
-    public List<Review> getAll(int count, Long filmId) {
+    public LinkedList<Review> getAll(int count, Long filmId) {
         if (filmId != null) {
             validateFilm(filmId);
         }
-        return reviewRepository.getAll(count, filmId);
+        LinkedList<Review> reviews = new LinkedList<>(reviewRepository.getAll(count, filmId));
+        reviews.sort(Comparator.comparing(Review::getUseful).reversed());
+        return reviews;
     }
 
     private void validateReview(Long id) {

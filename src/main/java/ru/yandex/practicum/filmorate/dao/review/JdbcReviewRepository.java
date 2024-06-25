@@ -34,27 +34,17 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Review update(Review review) {
-        if (review.getReviewId() == null) {
-            Map<String, Object> map = Map.of("user_id", review.getUserId(),
-                    "film_id", review.getFilmId());
-            review.setReviewId(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
-                    "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
-                    "WHERE r.user_id =:user_id AND r.film_id = :film_id " +
-                    "GROUP BY r.REVIEW_ID", new MapSqlParameterSource(map), reviewRowMapper).getReviewId());
-
-        }
-
         Map<String, Object> map = Map.of("ID", review.getReviewId(),
                 "CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
-                "USER_ID", review.getUserId(),
-                "FILM_ID", review.getFilmId());
+                "USEFUL", review.getUseful());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "UPDATE reviews" +
-                " SET CONTENT=:CONTENT,ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
+        String sql = "UPDATE reviews " +
+                "SET CONTENT=:CONTENT, ISPOSITIVE =:ISPOSITIVE " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
-        saveEvent(review.getUserId(), review.getReviewId(), "REVIEW", "UPDATE");
+        Review newReview = getById(review.getReviewId()).get();
+        saveEvent(newReview.getUserId(), newReview.getReviewId(), "REVIEW", "UPDATE");
         return getById(review.getReviewId()).get();
     }
 
@@ -63,23 +53,25 @@ public class JdbcReviewRepository implements ReviewRepository {
         Review review = getById(reviewId).get();
         Map<String, Object> map = Map.of("reviewId", reviewId);
         MapSqlParameterSource params = new MapSqlParameterSource(map);
+        Review oldReview = getById(reviewId).get();
         jdbcOperations.update("DELETE FROM REVIEWS WHERE REVIEW_ID=:reviewId",
                 params);
-        saveEvent(review.getUserId(), reviewId, "REVIEW", "REMOVE");
+        saveEvent(oldReview.getUserId(), reviewId, "REVIEW", "REMOVE");
         return review;
     }
 
     @Override
     public Optional<Review> getById(Long reviewId) {
         return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
-                        "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id WHERE r.review_id =:reviewId " +
+                        "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
+                        "WHERE r.review_id =:reviewId " +
                         "GROUP BY r.REVIEW_ID",
                 Map.of("reviewId", reviewId), reviewRowMapper));
     }
 
     @Override
     public List<Review> getAll(int count, Long filmId) {
-        List<Review> reviewList = new ArrayList<>();
+        List<Review> reviewList;
         if (filmId == null) {
             reviewList = jdbcOperations.query(
                     "SELECT r.*, SUM(rl.USEFUL) USEFUL " +
@@ -107,7 +99,6 @@ public class JdbcReviewRepository implements ReviewRepository {
         String sql = "MERGE INTO reviews_likes (review_id, user_id, useful)" +
                 " VALUES(:review_id,:user_id,:useful)";
         jdbcOperations.update(sql, params);
-        saveEvent(userId, id, "LIKE", "ADD");
         return getById(id).get();
     }
 
@@ -119,7 +110,6 @@ public class JdbcReviewRepository implements ReviewRepository {
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = "DELETE FROM REVIEWS_LIKES WHERE user_id = :user_id AND review_id= :review_id";
         jdbcOperations.update(sql, params);
-        saveEvent(userId, id, "LIKE", "REMOVE");
         return getById(id).get();
     }
 

@@ -1,15 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.model.Marker.Update;
 
 @Data
 @RequiredArgsConstructor
 public class Review {
-    @NotNull(groups = Marker.Update.class)
+    @NotNull(groups = Update.class)
     Long reviewId;
+    @NotNull
     String content;
     @NotNull
     Boolean isPositive;
