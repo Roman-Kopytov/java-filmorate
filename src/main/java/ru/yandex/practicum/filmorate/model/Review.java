@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -19,9 +18,10 @@ public class Review {
     Long filmId;
     int useful = 0;
 
-    public Review(long id, String content, boolean b, long userId, long filmId) {
+    public Review(long id, String content, boolean b, long userId, long filmId, int useful) {
         this(content, b, userId, filmId);
         this.reviewId = id;
+        this.useful = useful;
     }
 
     public Review(String content, boolean b, long userId, long filmId) {

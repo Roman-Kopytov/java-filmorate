@@ -40,8 +40,8 @@ public class JdbcReviewRepository implements ReviewRepository {
                 "USER_ID", review.getUserId(),
                 "FILM_ID", review.getFilmId());
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "UPDATE reviews" +
-                " SET CONTENT=:CONTENT,ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
+        String sql = "UPDATE reviews " +
+                "SET CONTENT=:CONTENT, ISPOSITIVE =:ISPOSITIVE, USER_ID=:USER_ID, FILM_ID=:FILM_ID " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
         saveEvent(review.getUserId(), review.getReviewId(), "REVIEW", "UPDATE");

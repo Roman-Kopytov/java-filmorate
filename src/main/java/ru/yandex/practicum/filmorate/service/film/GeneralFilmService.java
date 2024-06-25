@@ -31,6 +31,7 @@ public class GeneralFilmService implements FilmService {
     private final GenreRepository genreRepository;
     private final DirectorRepository directorRepository;
     private final MpaRepository mpaRepository;
+    private final Validate validate;
 
     @Override
     public FilmDto getById(long id) {

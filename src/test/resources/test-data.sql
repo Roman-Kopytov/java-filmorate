@@ -24,10 +24,14 @@ INSERT INTO USERS (NAME, EMAIL, LOGIN, BIRTHDAY)
 INSERT INTO FILMS (NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID)
     VALUES ('TJjtJuGS8dUeAzm', 'HZOE3ct3plkt3m4ip6dN4EMzqop93SdO5QdJD16uzdhDIgUaQl', '1962-01-31', 156, 3),
            ('8B8qgTBRtGKBdJN', 'wrVuIIL79f228O2tecGsMdMVbltg1xKpz5qLz86LVHIOv9xJq1', '1962-03-06', 65, 4),
-           ('uUk6L30WM5jNBHc', 'cB22DWO2euD7py3KEnxpmqcBOh2sJZAOkHJP1pxgPlvbnuxEVW', '1997-03-04', 118, 1);
---        ('Fj4X6FXhpdSI9vr', 'OxuSzl2soynSCqlcDIWTWBtg84lQXEv45w8Fpp2PwO6vybtNJ5', '1997-08-23', 104, 2),
---        ('G9Bm4qk7CXJdi1G', '7U5R4z7hMDwIedpjT7PvYLT3GQU0bD2zNMVaseYqw7uzZmk2J8', '2004-09-08', 156, 2),
---        ('fHW3acwMUAeOcoG', 'uF2ItDav0ypDF3lgDn7Hcd8mhMZrv64L27mODwdiUVv2Zazut2', '1983-07-10', 115, 1);
+           ('uUk6L30WM5jNBHc', 'cB22DWO2euD7py3KEnxpmqcBOh2sJZAOkHJP1pxgPlvbnuxEVW', '1997-03-04', 118, 1),
+        ('Fj4X6FXhpdSI9vr', 'OxuSzl2soynSCqlcDIWTWBtg84lQXEv45w8Fpp2PwO6vybtNJ5', '1997-08-23', 104, 2),
+        ('G9Bm4qk7CXJdi1G', '7U5R4z7hMDwIedpjT7PvYLT3GQU0bD2zNMVaseYqw7uzZmk2J8', '2004-09-08', 156, 2),
+        ('fHW3acwMUAeOcoG', 'uF2ItDav0ypDF3lgDn7Hcd8mhMZrv64L27mODwdiUVv2Zazut2', '1983-07-10', 115, 1),
+        ('fHW3acwMUAeOcoG', 'uF2ItDav0ypDF3lgDn7Hcd8mhMZrv64L27mODwdiUVv2Zazut2', '1983-07-10', 115, 1),
+        ('fHW3acwMUAeOcoG', 'uF2ItDav0ypDF3lgDn7Hcd8mhMZrv64L27mODwdiUVv2Zazut2', '1983-07-10', 115, 1),
+        ('fHW3acwMUAeOcoG', 'uF2ItDav0ypDF3lgDn7Hcd8mhMZrv64L27mODwdiUVv2Zazut2', '1983-07-10', 115, 1),
+        ('fHW3acwMUAeOcoG', 'uF2ItDav0ypDF3lgDn7Hcd8mhMZrv64L27mODwdiUVv2Zazut2', '1983-07-10', 115, 1);
 
 INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID)
     VALUES (1, 2),

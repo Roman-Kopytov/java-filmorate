@@ -44,8 +44,8 @@ public class GeneralReviewService implements ReviewService {
     @Override
     public Review update(Review review) {
         validate.validateReview(review.getReviewId());
-        validate.validateFilm(review.getFilmId());
-        validate.validateUser(review.getUserId());
+//        validate.validateFilm(review.getFilmId());
+//        validate.validateUser(review.getUserId());
         return reviewRepository.update(review);
     }
 

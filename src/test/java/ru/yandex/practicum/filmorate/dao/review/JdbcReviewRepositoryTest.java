@@ -50,7 +50,14 @@ class JdbcReviewRepositoryTest {
 
     @Test
     void updateTest() {
-        Review review = repository.save(new Review("Content", true, 1L, 1L));
+        //Review review = repository.save(new Review("Content", true, 1L, 1L));
+        Review review = repository.save(new Review(1L,
+                "This film is not too bad.",
+                true,
+                2L,
+                2L,
+                10
+        ));
         review.setContent("NewContent");
         Review saveReview = repository.update(review);
         Assertions.assertEquals(review.getContent(), saveReview.getContent());
@@ -96,5 +103,8 @@ class JdbcReviewRepositoryTest {
         Assertions.assertEquals(3, repository.getAll(10, 1L).size());
     }
 
+    @Test
+    void operationLike() {
 
+}
 }
