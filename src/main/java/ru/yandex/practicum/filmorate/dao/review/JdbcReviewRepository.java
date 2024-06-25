@@ -61,7 +61,7 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Optional<Review> getById(Long reviewId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
+        return Optional.of(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
                         "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id WHERE r.review_id =:reviewId " +
                         "GROUP BY r.REVIEW_ID",
                 Map.of("reviewId", reviewId), reviewRowMapper));

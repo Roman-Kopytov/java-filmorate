@@ -62,8 +62,8 @@ class JdbcReviewRepositoryTest {
         Review saveReview = repository.update(review);
         Assertions.assertEquals(review.getContent(), saveReview.getContent());
         try {
-            repository.update(new Review(saveReview.getReviewId(), "FailContentUser", true, -1L, 1L));
-            repository.update(new Review(saveReview.getReviewId(), "FailContentFilm", true, 1L, -1L));
+            repository.update(new Review(saveReview.getReviewId(), "FailContentUser", true, -1L, 1L, 0));
+            repository.update(new Review(saveReview.getReviewId(), "FailContentFilm", true, 1L, -1L, 0));
         } catch (Exception ignored) {
         } finally {
             Assertions.assertEquals("NewContent", repository.getById(review.getReviewId()).get().getContent());

@@ -10,7 +10,6 @@ public class Review {
     @NotNull(groups = Marker.Update.class)
     Long reviewId;
     String content;
-    @NotNull
     Boolean isPositive;
     @NotNull
     Long userId;

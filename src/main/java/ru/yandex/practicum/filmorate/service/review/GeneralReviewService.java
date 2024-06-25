@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.review.ReviewRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
+import ru.yandex.practicum.filmorate.exception.BadBodyRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.validate.Validate;
@@ -44,8 +45,11 @@ public class GeneralReviewService implements ReviewService {
     @Override
     public Review update(Review review) {
         validate.validateReview(review.getReviewId());
-//        validate.validateFilm(review.getFilmId());
-//        validate.validateUser(review.getUserId());
+        validate.validateFilm(review.getFilmId());
+        validate.validateUser(review.getUserId());
+        if (review.getReviewId() == null) {
+            throw new BadBodyRequestException("null review id");
+        }
         return reviewRepository.update(review);
     }
 
