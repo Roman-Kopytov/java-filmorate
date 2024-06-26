@@ -134,7 +134,7 @@ public class JdbcUserRepository implements UserRepository {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
         String query = """
-                INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)
+                INSERT INTO EVENT (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)
                 VALUES(:userId,:entityId,:eventType,:operation)
                 """;
         jdbcOperations.update(query, params, keyHolder);
@@ -142,7 +142,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public List<Event> getFeed(long id) {
-        return jdbcOperations.query("SELECT * FROM FEED WHERE user_id =:userId",
+        return jdbcOperations.query("SELECT * FROM EVENT WHERE user_id =:userId",
                 Map.of("userId", id), new EventRowMapper());
     }
 
