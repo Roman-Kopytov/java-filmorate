@@ -200,30 +200,12 @@ public class JdbcFilmRepository implements FilmRepository {
     public void addLike(Film film, User user) {
         jdbcOperations.update("INSERT INTO LIKES (film_id,user_id) VALUES (:film_id,:user_id)",
                 Map.of("film_id", film.getId(), "user_id", user.getId()));
-
-        saveEvent(user.getId(), film.getId(), "LIKE", "ADD");
     }
 
     @Override
     public void deleteLike(Film film, User user) {
         jdbcOperations.update("DELETE FROM LIKES WHERE FILM_ID=:film_id",
                 Map.of("film_id", film.getId()));
-
-        saveEvent(user.getId(), film.getId(), "LIKE", "REMOVE");
-    }
-
-    private void saveEvent(long userId, long entityId, String eventType, String operation) {
-        Map<String, Object> eventValues = new HashMap<>();
-        eventValues.put("userId", userId);
-        eventValues.put("entityId", entityId);
-        eventValues.put("eventType", eventType);
-        eventValues.put("operation", operation);
-
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
-        String query = "INSERT INTO EVENT (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
-                " VALUES(:userId,:entityId,:eventType,:operation)";
-        jdbcOperations.update(query, params, keyHolder);
     }
 
     @Override
@@ -367,18 +349,16 @@ public class JdbcFilmRepository implements FilmRepository {
                 arrUserIdString.append(userIdList.get(i));
             } else arrUserIdString.append(userIdList.get(i) + ",");
         }
-        String s = """
+        String sql = """
                 select f.*, MPA.NAME FROM LIKES fl LEFT JOIN Films f ON fl.FILM_ID = f.FILM_ID
                 LEFT JOIN MPA on f.MPA_ID = MPA.MPA_ID
                 LEFT JOIN FILMS_GENRES on f.FILM_ID = FILMS_GENRES.FILM_ID
-                LEFT JOIN GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID
-                LEFT JOIN FILM_DIRECTORS on f.FILM_ID = FILM_DIRECTORS.FILM_ID
-                LEFT JOIN DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID
                 WHERE fl.USER_ID in (:arr)
                 AND fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id);
                 """;
-        List<Film> filmList = jdbcOperations.query(s, Map.of("arr", arrUserIdString, "id", userId), new FilmRowMapper());
-        return filmList;
+        List<Film> filmList = jdbcOperations.query(sql,
+                Map.of("arr", arrUserIdString, "id", userId), new FilmRowMapper());
+        return collectFilmComponent(filmList);
     }
 
     private List<Film> collectFilmComponent(List<Film> films) {

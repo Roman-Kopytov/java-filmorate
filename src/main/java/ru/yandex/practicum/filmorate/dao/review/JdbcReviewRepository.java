@@ -59,7 +59,7 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Optional<Review> getById(Long reviewId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL),USEFUL " +
+        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) AS USEFUL " +
                         "FROM reviews r " +
                         "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
                         "WHERE r.review_id =:reviewId " +
@@ -72,18 +72,24 @@ public class JdbcReviewRepository implements ReviewRepository {
         List<Review> reviewList;
         if (filmId == null) {
             reviewList = jdbcOperations.query(
-                    "SELECT r.*, SUM(rl.USEFUL) AS USEFUL " +
-                            "FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
-                            "GROUP BY r.REVIEW_ID " +
-                            "LIMIT :count",
+                    """
+                            SELECT r.*, SUM(rl.USEFUL) AS USEFUL
+                            FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id
+                            GROUP BY r.REVIEW_ID
+                            ORDER BY USEFUL desc
+                            LIMIT :count
+                            """,
                     Map.of("count", count), reviewRowMapper);
         } else {
             reviewList = jdbcOperations.query(
-                    "SELECT r.*, SUM(rl.USEFUL) AS USEFUL " +
-                            "FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
-                            "WHERE film_id = :filmId " +
-                            "GROUP BY r.REVIEW_ID " +
-                            "LIMIT :count ",
+                    """
+                            SELECT r.*, SUM(rl.USEFUL) AS USEFUL
+                            FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id 
+                            WHERE film_id = :filmId 
+                            GROUP BY r.REVIEW_ID
+                            ORDER BY USEFUL desc
+                            LIMIT :count
+                        """,
                     Map.of("filmId", filmId, "count", count), reviewRowMapper);
         }
         return reviewList;

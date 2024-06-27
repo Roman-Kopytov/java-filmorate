@@ -13,7 +13,10 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,53 +31,6 @@ public class GeneralUserService implements UserService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
     private final JdbcEventRepository eventRepository;
-
-    private static List<FilmDto> getFilmDtos(final List<Long> listLongFilms, final List<Film> filmList) {
-        final List<FilmDto> recommendedFilms = new ArrayList<>();
-        for (Long l : listLongFilms) {
-            for (Film f : filmList) {
-                if (f.getId().equals(l)) {
-                    FilmDto filmDto = FilmMapper.mapToFilmDto(f);
-                    if (!recommendedFilms.contains(filmDto)) {
-                        recommendedFilms.add(filmDto);
-                    }
-                }
-            }
-        }
-        return recommendedFilms;
-    }
-
-    private static List<Long> getLongs(final List<Like> likesList, final List<Long> idFilms, final Long id) {
-        final List<Long> similarUser = new ArrayList<>();
-        for (Like like : likesList) {
-            if (like.getUserId().equals(id)) {
-                continue;
-            }
-            for (Long l : idFilms) {
-                if (similarUser.contains(like.getUserId())) {
-                    continue;
-                }
-                if (l.equals(like.getFilmId())) {
-                    similarUser.add(like.getUserId());
-                }
-            }
-        }
-
-        final List<Long> listLongFilms = new ArrayList<>();
-        for (Like like : likesList) {
-            if (like.getUserId().equals(id)) {
-                continue;
-            }
-            for (Long l : similarUser) {
-                if (l.equals(like.getUserId())) {
-                    if (!idFilms.contains(like.getFilmId())) {
-                        listLongFilms.add(like.getFilmId());
-                    }
-                }
-            }
-        }
-        return listLongFilms;
-    }
 
     @Override
     public UserDto create(final User user) {
@@ -140,11 +96,6 @@ public class GeneralUserService implements UserService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Удаление пользователя по Id
-     * Сначала пользователь извелкается из базы
-     * Потом его данные удаляются
-     */
     @Override
     public User deleteUserById(final long id) {
         User user = userRepository.getById(id)

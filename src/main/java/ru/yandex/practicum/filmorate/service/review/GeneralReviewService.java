@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -70,13 +71,11 @@ public class GeneralReviewService implements ReviewService {
     }
 
     @Override
-    public LinkedList<Review> getAll(int count, Long filmId) {
+    public List<Review> getAll(int count, Long filmId) {
         if (filmId != null) {
             validateFilm(filmId);
         }
-        LinkedList<Review> reviews = new LinkedList<>(reviewRepository.getAll(count, filmId));
-        reviews.sort(Comparator.comparing(Review::getUseful).reversed());
-        return reviews;
+        return reviewRepository.getAll(count, filmId);
     }
 
     private void validateReview(Long id) {
