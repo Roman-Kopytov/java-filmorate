@@ -363,7 +363,7 @@ public class JdbcFilmRepository implements FilmRepository {
     public List<Film> getRecommendation(List<Long> userIdList, Long userId) {
         StringBuilder arrUserIdString = new StringBuilder();
         for (int i = 0; i < userIdList.size(); i++) {
-            if (i == userIdList.size()-1) {
+            if (i == userIdList.size() - 1) {
                 arrUserIdString.append(userIdList.get(i));
             }
             else {
@@ -381,7 +381,7 @@ public class JdbcFilmRepository implements FilmRepository {
                                 where fl.USER_ID in (:arr)
                                 and fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id)
                                 """;
-        List<Film> filmList =  jdbcOperations.query(s, Map.of("arr",arrUserIdString,"id",userId) ,new FilmRowMapper());
+        List<Film> filmList = jdbcOperations.query(s, Map.of("arr", arrUserIdString, "id", userId), new FilmRowMapper());
         return filmList;
     }
 
