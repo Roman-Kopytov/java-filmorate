@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.director.DirectorRepository;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dao.event.JdbcEventRepository;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.genre.GenreRepository;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaRepository;
@@ -14,7 +15,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +30,7 @@ public class GeneralFilmService implements FilmService {
     private final GenreRepository genreRepository;
     private final DirectorRepository directorRepository;
     private final MpaRepository mpaRepository;
+    private final JdbcEventRepository eventRepository;
 
     @Override
     public FilmDto getById(long id) {
@@ -80,11 +81,13 @@ public class GeneralFilmService implements FilmService {
     @Override
     public void addLike(long userId, long filmId) {
         filmRepository.addLike(getFilmFromRepository(filmId), getUserFromRepository(userId));
+        eventRepository.saveEvent(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
     public void deleteLike(long userId, long filmId) {
         filmRepository.deleteLike(getFilmFromRepository(filmId), getUserFromRepository(userId));
+        eventRepository.saveEvent(userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
 
@@ -106,21 +109,18 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<FilmDto> getPopularFilms(int count, Long genreId, Integer year) {
-        List<FilmDto> newListFilm = new ArrayList<>();
         List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
-        for (Film film : filmList) {
-            newListFilm.add(FilmMapper.mapToFilmDto(film));
-        }
+        List<FilmDto> newListFilm = filmList.stream().map(film -> FilmMapper.mapToFilmDto(film)).toList();
         return newListFilm;
     }
 
     @Override
-    public List<FilmDto> getDirectorFilmsSortedBy(long directorId, String sortBy) {
+    public List<FilmDto> getDirectorFilmsSortedBy(long directorId, SortedBy sortBy) {
         Optional<Director> director = Optional.ofNullable(directorRepository.getById(directorId));
         if (director.isEmpty()) {
             throw new NotFoundException("Director not found with ID:" + directorId);
         } else {
-            List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy);
+            List<Film> films = filmRepository.getSortedFilmsByDirector(directorId, sortBy.toString());
             return films.stream()
                     .map(FilmMapper::mapToFilmDto)
                     .collect(Collectors.toList());

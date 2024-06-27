@@ -10,10 +10,7 @@ import ru.yandex.practicum.filmorate.dao.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.*;
 
@@ -200,8 +197,6 @@ public class JdbcFilmRepository implements FilmRepository {
     public void addLike(Film film, User user) {
         jdbcOperations.update("INSERT INTO LIKES (film_id,user_id) VALUES (:film_id,:user_id)",
                 Map.of("film_id", film.getId(), "user_id", user.getId()));
-
-        saveEvent(user.getId(), film.getId(), "LIKE", "ADD");
     }
 
     @Override
@@ -340,7 +335,7 @@ public class JdbcFilmRepository implements FilmRepository {
                     GROUP BY FILMS.FILM_ID
                     ORDER BY COUNT(LIKES.USER_ID) desc
                     """, Map.of("query", query), new FilmRowMapper()));
-            default -> null;
+            default -> new ArrayList<>();
         };
     }
 
@@ -357,6 +352,15 @@ public class JdbcFilmRepository implements FilmRepository {
                 GROUP BY f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME
                 ORDER BY f.NAME
                 """, Map.of("userId", userId, "friendId", friendId), new FilmRowMapper()));
+    }
+
+    @Override
+    public List<Film> getRecommendation(List<Long> userIdList, Long userId) {
+        String array = String.join(",", userIdList.stream().toArray(String[]::new));
+        String s = "select fl.FILM_ID from LIKES fl " +
+                "where fl.USER_ID in (" + userIdList + ") " +
+                "and fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id";
+        return jdbcOperations.query(s, Map.of("id",userId) ,new FilmRowMapper());
     }
 
     private List<Film> collectFilmComponent(List<Film> films) {

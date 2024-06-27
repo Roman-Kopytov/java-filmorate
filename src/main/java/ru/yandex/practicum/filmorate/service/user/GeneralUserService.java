@@ -6,15 +6,15 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.EventDto;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.dao.event.JdbcEventRepository;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.validate.Validate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,21 +28,8 @@ public class GeneralUserService implements UserService {
 
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
-
-    private static List<FilmDto> getFilmDtos(final List<Long> listLongFilms, final List<Film> filmList) {
-        final List<FilmDto> recommendedFilms = new ArrayList<>();
-        for (Long l : listLongFilms) {
-            for (Film f : filmList) {
-                if (f.getId().equals(l)) {
-                    FilmDto filmDto = FilmMapper.mapToFilmDto(f);
-                    if (!recommendedFilms.contains(filmDto)) {
-                        recommendedFilms.add(filmDto);
-                    }
-                }
-            }
-        }
-        return recommendedFilms;
-    }
+    private final JdbcEventRepository eventRepository;
+    private final Validate validate;
 
     private static List<Long> getLongs(final List<Like> likesList, final List<Long> idFilms, final Long id) {
         final List<Long> similarUser = new ArrayList<>();
@@ -86,11 +73,7 @@ public class GeneralUserService implements UserService {
 
     @Override
     public UserDto update(final User user) {
-        long userId = user.getId();
-        Optional<User> savedUSer = userRepository.getById(userId);
-        if (savedUSer.isEmpty()) {
-            throw new NotFoundException("User not found with id: " + userId);
-        }
+        validate.validateUser(user.getId());
         return UserMapper.mapToUserDto(userRepository.update(user));
     }
 
@@ -103,11 +86,13 @@ public class GeneralUserService implements UserService {
     @Override
     public void addFriend(final long userId, final long friendId) {
         userRepository.addFriend(getUserFromRepository(userId), getUserFromRepository(friendId));
+        eventRepository.saveEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     @Override
     public void deleteFriend(final long userId, final long friendId) {
         userRepository.deleteFriend(getUserFromRepository(userId), getUserFromRepository(friendId));
+        eventRepository.saveEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     private User getUserFromRepository(final long userId) {
@@ -153,18 +138,18 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<FilmDto> getRecommendations(final long id) {
-        final List<Like> likesList = userRepository.getMapUserLikeFilm();
-        final List<Film> filmList = filmRepository.getAll();
-        final List<Long> idFilms = new ArrayList<>();
-        for (Like l : likesList) {
-            if (l.getUserId().equals(id)) {
-                idFilms.add(l.getFilmId());
-            }
+    public List<FilmDto> getRecommendations(final long userId) {
+        List<Long> userIdList = userRepository.getRecommendation(userId);
+        if(userIdList.isEmpty()) {
+            return new ArrayList<>();
         }
-        final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
-        return getFilmDtos(listLongFilms, filmList);
-    }
+        else {
+        List<Film> filmList =filmRepository.getRecommendation(userIdList, userId);
+        return filmRepository.getRecommendation(userIdList, userId)
+                .stream()
+                .map(film -> FilmMapper.mapToFilmDto(film))
+                .toList();
+    }}
 
     @Override
     public List<EventDto> getFeed(final long id) {

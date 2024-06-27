@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.controller.pathHandler.SearchParameters;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
+import ru.yandex.practicum.filmorate.model.SortedBy;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import java.util.List;
@@ -38,11 +39,10 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}")
-    public FilmDto deleteFilmById(@PathVariable("id") long id) {
+    public void deleteFilmById(@PathVariable("id") long id) {
         log.info("==>DELETE films/{}", id);
         FilmDto deletedFilm = filmService.deleteFilmById(id);
         log.info("DELETE /films/{} <== {}", id, deletedFilm);
-        return deletedFilm;
     }
 
     @PostMapping
@@ -81,7 +81,7 @@ public class FilmController {
     }
 
     @GetMapping("director/{directorId}")
-    public List<FilmDto> getSortedFilmsByDirector(@PathVariable long directorId, @RequestParam String sortBy) {
+    public List<FilmDto> getSortedFilmsByDirector(@PathVariable long directorId, @RequestParam SortedBy sortBy) {
         log.info("==>GET //films/director/{directorId");
         return filmService.getDirectorFilmsSortedBy(directorId, sortBy);
     }

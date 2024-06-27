@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -21,6 +22,7 @@ public class JdbcUserRepository implements UserRepository {
     private final NamedParameterJdbcOperations jdbcOperations;
     private final UserRowMapper userRowMapper;
     private final LikesRowMapper likesRowMapper;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Optional<User> getById(long userId) {
@@ -108,8 +110,6 @@ public class JdbcUserRepository implements UserRepository {
                         VALUES (:userId,:friendId)
                         """,
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
-
-        saveEvent(user.getId(), friend.getId(), "FRIEND", "ADD");
     }
 
     @Override
@@ -152,4 +152,11 @@ public class JdbcUserRepository implements UserRepository {
         return jdbcOperations.query(query, likesRowMapper);
     }
 
+    @Override
+    public List<Long> getRecommendation(long id) {
+        String query = "SELECT l2.USER_ID FROM likes l1 LEFT JOIN likes l2 ON (l1.film_id=l2.FILM_ID AND l1.user_id!=l2.USER_ID) LEFT JOIN users u ON (l2.USER_ID!=l1.user_id)  WHERE l1.user_id = :id GROUP BY L2.user_id HAVING count(l2.FILM_ID) > 1 ORDER BY count(l2.FILM_ID) DESC  LIMIT 10";
+        MapSqlParameterSource params = new MapSqlParameterSource(Map.of("id",id));
+        List<Long> longList = jdbcOperations.queryForList(query,params, Long.class);
+        return longList;
+    }
 }

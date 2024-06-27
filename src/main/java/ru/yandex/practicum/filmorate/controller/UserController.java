@@ -35,9 +35,9 @@ public class UserController {
         return userService.get(id);
     }
 
-    @GetMapping("/{id}/recommendations")
-    public List<FilmDto> getRecommendations(@PathVariable Long id) {
-        return userService.getRecommendations(id);
+    @GetMapping("/{userId}/recommendations")
+    public List<FilmDto> getRecommendations(@PathVariable Long userId) {
+        return userService.getRecommendations(userId);
     }
 
     @PostMapping

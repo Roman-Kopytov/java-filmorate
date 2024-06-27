@@ -29,4 +29,6 @@ public interface UserRepository {
     List<Event> getFeed(long id);
 
     List<Like> getMapUserLikeFilm();
+
+    List<Long> getRecommendation(long id);
 }
