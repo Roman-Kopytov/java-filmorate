@@ -362,7 +362,7 @@ public class JdbcFilmRepository implements FilmRepository {
     @Override
     public List<Film> getRecommendation(List<Long> userIdList, Long userId) {
         StringBuilder arrUserIdString = new StringBuilder();
-        for(int i = 0; i < userIdList.size(); i++) {
+        for (int i = 0; i < userIdList.size(); i++) {
             if (i == userIdList.size()-1) {
                 arrUserIdString.append(userIdList.get(i));
             }
