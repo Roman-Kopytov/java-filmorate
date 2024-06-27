@@ -139,11 +139,11 @@ public class GeneralUserService implements UserService {
     @Override
     public List<FilmDto> getRecommendations(final long userId) {
         List<Long> userIdList = userRepository.getRecommendation(userId);
-        if(userIdList.isEmpty()) {
+        if (userIdList.isEmpty()) {
             return new ArrayList<>();
         }
         else {
-        List<Film> filmList =filmRepository.getRecommendation(userIdList, userId);
+            List<Film> filmList = filmRepository.getRecommendation(userIdList, userId);
             return filmRepository.getRecommendation(userIdList, userId)
                 .stream()
                 .map(film -> FilmMapper.mapToFilmDto(film))
