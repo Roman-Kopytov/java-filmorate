@@ -30,4 +30,6 @@ public interface FilmRepository {
     List<Film> getTopPopular(int count, Long genreId, Integer year);
 
     List<Film> getCommonFilms(long userId, long friendId);
+
+    List<Film> getRecommendation(List<Long> userIdList, Long userId);
 }
