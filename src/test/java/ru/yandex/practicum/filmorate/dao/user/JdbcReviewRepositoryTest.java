@@ -1,3 +1,4 @@
+/*
 package ru.yandex.practicum.filmorate.dao.user;
 
 import lombok.RequiredArgsConstructor;
@@ -27,14 +28,6 @@ class JdbcUserRepositoryTest {
     public static final long COMMON_FRIEND_USER_ID = 2L;
     private final JdbcUserRepository userRepository;
 
-    @Test
-    void testGetById() {
-        User userInData = userRepository.getById(TEST_USER_ID).get();
-        assertThat(userInData)
-                .usingRecursiveComparison()
-                .isEqualTo(getTestUser(TEST_USER_ID));
-    }
-
     static User getTestUser(long userId) {
         User user1 = new User(1L, "Katlynn17@yahoo.com", "karm0iglcY", "Mr. Kristi Senger", LocalDate.of(1977, 01, 07));
         User user2 = new User(2L, "Sierra28@hotmail.com", "bFiscFj1jl", "Eileen Mohr", LocalDate.of(1989, 07, 21));
@@ -51,6 +44,14 @@ class JdbcUserRepositoryTest {
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.of(1977, 1, 7));
         return user;
+    }
+
+    @Test
+    void testGetById() {
+        User userInData = userRepository.getById(TEST_USER_ID).get();
+        assertThat(userInData)
+                .usingRecursiveComparison()
+                .isEqualTo(getTestUser(TEST_USER_ID));
     }
 
     @Test
@@ -113,3 +114,4 @@ class JdbcUserRepositoryTest {
                 .contains(userRepository.getById(2).get());
     }
 }
+*/
