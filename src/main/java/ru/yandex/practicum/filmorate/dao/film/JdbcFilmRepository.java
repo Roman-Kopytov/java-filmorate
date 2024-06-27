@@ -340,7 +340,7 @@ public class JdbcFilmRepository implements FilmRepository {
                     GROUP BY FILMS.FILM_ID
                     ORDER BY COUNT(LIKES.USER_ID) desc
                     """, Map.of("query", query), new FilmRowMapper()));
-            default -> null;
+            default -> new ArrayList<>();
         };
     }
 

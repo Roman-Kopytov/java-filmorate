@@ -110,8 +110,9 @@ public class GeneralFilmService implements FilmService {
     @Override
     public List<FilmDto> getPopularFilms(int count, Long genreId, Integer year) {
         List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
-        List<FilmDto> newListFilm = filmList.stream().map(film -> FilmMapper.mapToFilmDto(film)).toList();
-        return newListFilm;
+        return filmList.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     @Override
