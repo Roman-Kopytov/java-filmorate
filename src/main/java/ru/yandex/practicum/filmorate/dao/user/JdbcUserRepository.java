@@ -12,7 +12,10 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -108,8 +111,6 @@ public class JdbcUserRepository implements UserRepository {
                         VALUES (:userId,:friendId)
                         """,
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
-
-        saveEvent(user.getId(), friend.getId(), "FRIEND", "ADD");
     }
 
     @Override
@@ -120,24 +121,6 @@ public class JdbcUserRepository implements UserRepository {
                 """, Map.of("userId", user.getId(), "friendId", friend.getId()));
         jdbcOperations.update("DElETE FROM FRIENDSHIP WHERE user_id = :userId AND friend_id = :friendId",
                 Map.of("userId", user.getId(), "friendId", friend.getId()));
-
-        saveEvent(user.getId(), friend.getId(), "FRIEND", "REMOVE");
-    }
-
-    private void saveEvent(long userId, long entityId, String eventType, String operation) {
-        Map<String, Object> eventValues = new HashMap<>();
-        eventValues.put("userId", userId);
-        eventValues.put("entityId", entityId);
-        eventValues.put("eventType", eventType);
-        eventValues.put("operation", operation);
-
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
-        String query = """
-                INSERT INTO EVENT (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)
-                VALUES(:userId,:entityId,:eventType,:operation)
-                """;
-        jdbcOperations.update(query, params, keyHolder);
     }
 
     @Override

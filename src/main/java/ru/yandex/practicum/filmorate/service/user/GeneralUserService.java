@@ -6,15 +6,14 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.dto.EventDto;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dao.dto.UserDto;
+import ru.yandex.practicum.filmorate.dao.event.JdbcEventRepository;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,7 @@ public class GeneralUserService implements UserService {
 
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
+    private final JdbcEventRepository eventRepository;
 
     private static List<FilmDto> getFilmDtos(final List<Long> listLongFilms, final List<Film> filmList) {
         final List<FilmDto> recommendedFilms = new ArrayList<>();
@@ -103,11 +103,13 @@ public class GeneralUserService implements UserService {
     @Override
     public void addFriend(final long userId, final long friendId) {
         userRepository.addFriend(getUserFromRepository(userId), getUserFromRepository(friendId));
+        eventRepository.saveEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     @Override
     public void deleteFriend(final long userId, final long friendId) {
         userRepository.deleteFriend(getUserFromRepository(userId), getUserFromRepository(friendId));
+        eventRepository.saveEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     private User getUserFromRepository(final long userId) {

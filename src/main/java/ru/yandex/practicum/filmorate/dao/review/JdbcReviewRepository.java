@@ -28,7 +28,6 @@ public class JdbcReviewRepository implements ReviewRepository {
                 " VALUES(:CONTENT, :ISPOSITIVE, :USER_ID, :FILM_ID)";
         jdbcOperations.update(sql, params, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        saveEvent(review.getUserId(), review.getReviewId(), "REVIEW", "ADD");
         return getById(review.getReviewId()).get();
     }
 
@@ -43,8 +42,6 @@ public class JdbcReviewRepository implements ReviewRepository {
                 "SET CONTENT=:CONTENT, ISPOSITIVE =:ISPOSITIVE " +
                 "WHERE review_id=:ID";
         jdbcOperations.update(sql, params);
-        Review newReview = getById(review.getReviewId()).get();
-        saveEvent(newReview.getUserId(), newReview.getReviewId(), "REVIEW", "UPDATE");
         return getById(review.getReviewId()).get();
     }
 
@@ -53,10 +50,8 @@ public class JdbcReviewRepository implements ReviewRepository {
         Review review = getById(reviewId).get();
         Map<String, Object> map = Map.of("reviewId", reviewId);
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        Review oldReview = getById(reviewId).get();
         jdbcOperations.update("DELETE FROM REVIEWS WHERE REVIEW_ID=:reviewId",
                 params);
-        saveEvent(oldReview.getUserId(), reviewId, "REVIEW", "REMOVE");
         return review;
     }
 
@@ -74,16 +69,18 @@ public class JdbcReviewRepository implements ReviewRepository {
         List<Review> reviewList;
         if (filmId == null) {
             reviewList = jdbcOperations.query(
-                    "SELECT r.*, SUM(rl.USEFUL) USEFUL " +
+                    "SELECT r.*, SUM(rl.USEFUL) AS USEFUL " +
                             "FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
-                            "GROUP BY r.REVIEW_ID LIMIT :count",
+                            "GROUP BY r.REVIEW_ID " +
+                            "LIMIT :count",
                     Map.of("count", count), reviewRowMapper);
         } else {
             reviewList = jdbcOperations.query(
-                    "SELECT r.*, SUM(rl.USEFUL) USEFUL " +
+                    "SELECT r.*, SUM(rl.USEFUL) AS USEFUL " +
                             "FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
                             "WHERE film_id = :filmId " +
-                            "GROUP BY r.REVIEW_ID LIMIT :count",
+                            "GROUP BY r.REVIEW_ID " +
+                            "LIMIT :count ",
                     Map.of("filmId", filmId, "count", count), reviewRowMapper);
         }
         return reviewList;

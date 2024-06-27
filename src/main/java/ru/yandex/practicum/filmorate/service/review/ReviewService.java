@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service.review;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.LinkedList;
+import java.util.List;
 
 @Service
 public interface ReviewService {
@@ -16,7 +16,7 @@ public interface ReviewService {
 
     Review getById(Long id);
 
-    LinkedList<Review> getAll(int count, Long filmId);
+    List<Review> getAll(int count, Long filmId);
 
     Review operationLike(Long id, Long userId, int i);
 

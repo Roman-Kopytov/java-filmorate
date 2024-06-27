@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.service.review;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.event.JdbcEventRepository;
 import ru.yandex.practicum.filmorate.dao.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.review.ReviewRepository;
 import ru.yandex.practicum.filmorate.dao.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.Comparator;
@@ -17,6 +20,7 @@ public class GeneralReviewService implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
+    private final JdbcEventRepository eventRepository;
 
     @Override
     public Review operationLike(Long reviewId, Long userId, int useful) {
@@ -37,20 +41,27 @@ public class GeneralReviewService implements ReviewService {
     public Review create(Review review) {
         validateFilm(review.getFilmId());
         validateUser(review.getUserId());
-        return reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
+        eventRepository.saveEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.ADD);
+        return savedReview;
     }
 
     @Override
     public Review update(Review review) {
         validateFilm(review.getFilmId());
         validateUser(review.getUserId());
-        return reviewRepository.update(review);
+        Review newReview = reviewRepository.update(review);
+        eventRepository.saveEvent(newReview.getUserId(), newReview.getReviewId(), EventType.REVIEW, Operation.UPDATE);
+        return newReview;
     }
 
     @Override
     public Review delete(Long reviewId) {
         validateReview(reviewId);
-        return reviewRepository.delete(reviewId);
+        Review oldReview = reviewRepository.getById(reviewId).get();
+        Review deleted = reviewRepository.delete(reviewId);
+        eventRepository.saveEvent(oldReview.getUserId(), reviewId, EventType.REVIEW, Operation.REMOVE);
+        return deleted;
     }
 
     @Override
