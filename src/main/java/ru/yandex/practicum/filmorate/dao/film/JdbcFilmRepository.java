@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.dao.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmExtractor;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
@@ -197,6 +200,8 @@ public class JdbcFilmRepository implements FilmRepository {
     public void addLike(Film film, User user) {
         jdbcOperations.update("INSERT INTO LIKES (film_id,user_id) VALUES (:film_id,:user_id)",
                 Map.of("film_id", film.getId(), "user_id", user.getId()));
+
+        saveEvent(user.getId(), film.getId(), "LIKE", "ADD");
     }
 
     @Override
@@ -335,7 +340,7 @@ public class JdbcFilmRepository implements FilmRepository {
                     GROUP BY FILMS.FILM_ID
                     ORDER BY COUNT(LIKES.USER_ID) desc
                     """, Map.of("query", query), new FilmRowMapper()));
-            default -> new ArrayList<>();
+            default -> null;
         };
     }
 
@@ -356,11 +361,24 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> getRecommendation(List<Long> userIdList, Long userId) {
-        String array = String.join(",", userIdList.stream().toArray(String[]::new));
-        String s = "select fl.FILM_ID from LIKES fl " +
-                "where fl.USER_ID in (" + userIdList + ") " +
-                "and fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id";
-        return jdbcOperations.query(s, Map.of("id",userId) ,new FilmRowMapper());
+        StringBuilder arrUserIdString = new StringBuilder();
+        for (int i = 0; i < userIdList.size(); i++) {
+            if (i == userIdList.size() - 1) {
+                arrUserIdString.append(userIdList.get(i));
+            } else arrUserIdString.append(userIdList.get(i) + ",");
+        }
+        String s = """
+                select f.* FROM LIKES fl LEFT JOIN Films f ON fl.FILM_ID = f.FILM_ID
+                left join MPA on f.MPA_ID = MPA.MPA_ID
+                left join FILMS_GENRES on f.FILM_ID = FILMS_GENRES.FILM_ID
+                left join GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID
+                left join FILM_DIRECTORS on f.FILM_ID = FILM_DIRECTORS.FILM_ID
+                left join DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID
+                where fl.USER_ID in (:arr)
+                and fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id)
+                """;
+        List<Film> filmList = jdbcOperations.query(s, Map.of("arr", arrUserIdString, "id", userId), new FilmRowMapper());
+        return filmList;
     }
 
     private List<Film> collectFilmComponent(List<Film> films) {
