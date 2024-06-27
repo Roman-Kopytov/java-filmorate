@@ -122,7 +122,7 @@ public class JdbcReviewRepository implements ReviewRepository {
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
-        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
+        String query = "INSERT INTO EVENT (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
                 " VALUES(:userId,:entityId,:eventType,:operation)";
         jdbcOperations.update(query, params, keyHolder);
     }

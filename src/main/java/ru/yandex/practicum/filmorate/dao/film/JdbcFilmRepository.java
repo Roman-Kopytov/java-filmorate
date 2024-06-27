@@ -221,7 +221,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
-        String query = "INSERT INTO FEED (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
+        String query = "INSERT INTO EVENT (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
                 " VALUES(:userId,:entityId,:eventType,:operation)";
         jdbcOperations.update(query, params, keyHolder);
     }
@@ -340,7 +340,7 @@ public class JdbcFilmRepository implements FilmRepository {
                     GROUP BY FILMS.FILM_ID
                     ORDER BY COUNT(LIKES.USER_ID) desc
                     """, Map.of("query", query), new FilmRowMapper()));
-            default -> null;
+            default -> new ArrayList<>();
         };
     }
 
@@ -357,6 +357,28 @@ public class JdbcFilmRepository implements FilmRepository {
                 GROUP BY f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME
                 ORDER BY f.NAME
                 """, Map.of("userId", userId, "friendId", friendId), new FilmRowMapper()));
+    }
+
+    @Override
+    public List<Film> getRecommendation(List<Long> userIdList, Long userId) {
+        StringBuilder arrUserIdString = new StringBuilder();
+        for (int i = 0; i < userIdList.size(); i++) {
+            if (i == userIdList.size() - 1) {
+                arrUserIdString.append(userIdList.get(i));
+            } else arrUserIdString.append(userIdList.get(i) + ",");
+        }
+        String s = """
+                select f.* FROM LIKES fl LEFT JOIN Films f ON fl.FILM_ID = f.FILM_ID
+                left join MPA on f.MPA_ID = MPA.MPA_ID
+                left join FILMS_GENRES on f.FILM_ID = FILMS_GENRES.FILM_ID
+                left join GENRES on FILMS_GENRES.GENRE_ID = GENRES.GENRE_ID
+                left join FILM_DIRECTORS on f.FILM_ID = FILM_DIRECTORS.FILM_ID
+                left join DIRECTORS on FILM_DIRECTORS.DIRECTOR_ID = DIRECTORS.DIRECTOR_ID
+                where fl.USER_ID in (:arr)
+                and fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id)
+                """;
+        List<Film> filmList = jdbcOperations.query(s, Map.of("arr", arrUserIdString, "id", userId), new FilmRowMapper());
+        return filmList;
     }
 
     private List<Film> collectFilmComponent(List<Film> films) {
