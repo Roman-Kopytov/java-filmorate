@@ -18,7 +18,6 @@ import ru.yandex.practicum.filmorate.service.validate.Validate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -145,11 +144,12 @@ public class GeneralUserService implements UserService {
         }
         else {
         List<Film> filmList =filmRepository.getRecommendation(userIdList, userId);
-        return filmRepository.getRecommendation(userIdList, userId)
+            return filmRepository.getRecommendation(userIdList, userId)
                 .stream()
                 .map(film -> FilmMapper.mapToFilmDto(film))
                 .toList();
-    }}
+        }
+    }
 
     @Override
     public List<EventDto> getFeed(final long id) {
