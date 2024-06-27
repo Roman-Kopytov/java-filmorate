@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -106,12 +105,10 @@ public class GeneralFilmService implements FilmService {
 
     @Override
     public List<FilmDto> getPopularFilms(int count, Long genreId, Integer year) {
-        List<FilmDto> newListFilm = new ArrayList<>();
         List<Film> filmList = filmRepository.getTopPopular(count, genreId, year);
-        for (Film film : filmList) {
-            newListFilm.add(FilmMapper.mapToFilmDto(film));
-        }
-        return newListFilm;
+        return filmList.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     @Override
