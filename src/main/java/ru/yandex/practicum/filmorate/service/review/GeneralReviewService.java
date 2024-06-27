@@ -23,10 +23,10 @@ public class GeneralReviewService implements ReviewService {
     private final JdbcEventRepository eventRepository;
 
     @Override
-    public Review operationLike(Long reviewId, Long userId, int useful) {
+    public Review operationLike(Long reviewId, Long userId, boolean like) {
         validateReview(reviewId);
         validateUser(userId);
-        return reviewRepository.operationLike(reviewId, userId, useful);
+        return reviewRepository.operationLike(reviewId, userId, like ? 1 : -1);
     }
 
     @Override

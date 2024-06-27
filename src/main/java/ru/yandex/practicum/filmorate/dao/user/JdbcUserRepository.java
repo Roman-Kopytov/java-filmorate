@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.dao.mappers.EventRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.LikesRowMapper;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -130,9 +129,11 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
-    public List<Like> getMapUserLikeFilm() {
-        final String query = "SELECT * FROM likes";
-        return jdbcOperations.query(query, likesRowMapper);
+    public List<Long> getRecommendation(long id) {
+        String query = "SELECT l2.USER_ID FROM likes l1 LEFT JOIN likes l2 ON (l1.film_id=l2.FILM_ID AND l1.user_id!=l2.USER_ID) LEFT JOIN users u ON (l2.USER_ID!=l1.user_id)  WHERE l1.user_id = :id GROUP BY L2.user_id HAVING count(l2.FILM_ID) > 1 ORDER BY count(l2.FILM_ID) DESC  LIMIT 10";
+        MapSqlParameterSource params = new MapSqlParameterSource(Map.of("id", id));
+        List<Long> longList = jdbcOperations.queryForList(query, params, Long.class);
+        return longList;
     }
 
 }

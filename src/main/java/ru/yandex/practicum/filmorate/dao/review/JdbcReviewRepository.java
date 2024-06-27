@@ -8,7 +8,10 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -37,11 +40,10 @@ public class JdbcReviewRepository implements ReviewRepository {
                 "CONTENT", review.getContent(),
                 "ISPOSITIVE", review.getIsPositive(),
                 "USEFUL", review.getUseful());
-        MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = "UPDATE reviews " +
                 "SET CONTENT=:CONTENT, ISPOSITIVE =:ISPOSITIVE " +
                 "WHERE review_id=:ID";
-        jdbcOperations.update(sql, params);
+        jdbcOperations.update(sql, map);
         return getById(review.getReviewId()).get();
     }
 
@@ -57,7 +59,8 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Optional<Review> getById(Long reviewId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) USEFUL FROM reviews r " +
+        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL),USEFUL " +
+                        "FROM reviews r " +
                         "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
                         "WHERE r.review_id =:reviewId " +
                         "GROUP BY r.REVIEW_ID",
@@ -108,19 +111,5 @@ public class JdbcReviewRepository implements ReviewRepository {
         String sql = "DELETE FROM REVIEWS_LIKES WHERE user_id = :user_id AND review_id= :review_id";
         jdbcOperations.update(sql, params);
         return getById(id).get();
-    }
-
-    private void saveEvent(long userId, long entityId, String eventType, String operation) {
-        Map<String, Object> eventValues = new HashMap<>();
-        eventValues.put("userId", userId);
-        eventValues.put("entityId", entityId);
-        eventValues.put("eventType", eventType);
-        eventValues.put("operation", operation);
-
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        MapSqlParameterSource params = new MapSqlParameterSource(eventValues);
-        String query = "INSERT INTO EVENT (USER_ID,ENTITY_ID,EVENT_TYPE,OPERATION)" +
-                " VALUES(:userId,:entityId,:eventType,:operation)";
-        jdbcOperations.update(query, params, keyHolder);
     }
 }

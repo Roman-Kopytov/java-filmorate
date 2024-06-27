@@ -18,7 +18,7 @@ public interface ReviewService {
 
     List<Review> getAll(int count, Long filmId);
 
-    Review operationLike(Long id, Long userId, int i);
+    Review operationLike(Long id, Long userId, boolean b);
 
     Review deleteLike(Long id, Long userId);
 

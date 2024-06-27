@@ -155,22 +155,21 @@ public class GeneralUserService implements UserService {
     }
 
     @Override
-    public List<FilmDto> getRecommendations(final long id) {
-        final List<Like> likesList = userRepository.getMapUserLikeFilm();
-        final List<Film> filmList = filmRepository.getAll();
-        final List<Long> idFilms = new ArrayList<>();
-        for (Like l : likesList) {
-            if (l.getUserId().equals(id)) {
-                idFilms.add(l.getFilmId());
-            }
+    public List<FilmDto> getRecommendations(final long userId) {
+        List<Long> userIdList = userRepository.getRecommendation(userId);
+        if (userIdList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            List<Film> filmList = filmRepository.getRecommendation(userIdList, userId);
+            return filmList.stream()
+                    .map(film -> FilmMapper.mapToFilmDto(film))
+                    .toList();
         }
-        final List<Long> listLongFilms = getLongs(likesList, idFilms, id);
-        return getFilmDtos(listLongFilms, filmList);
     }
 
     @Override
     public List<EventDto> getFeed(final long id) {
-        User user = userRepository.getById(id)
+        userRepository.getById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID: " + id + " не найден"));
         return userRepository.getFeed(id).stream().map(EventMapper::mapToEventDto).toList();
     }

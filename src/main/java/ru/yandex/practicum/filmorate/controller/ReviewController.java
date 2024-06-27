@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.review.ReviewService;
 
-import java.util.*;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/reviews")
@@ -45,14 +45,14 @@ public class ReviewController {
     @ResponseStatus(HttpStatus.OK)
     public Review addLike(@PathVariable("reviewId") Long reviewId, @PathVariable("userId") Long userId) {
         log.info("==>PUT /review  id {} userId {}", reviewId, userId);
-        return reviewService.operationLike(reviewId, userId, LIKE);
+        return reviewService.operationLike(reviewId, userId, true);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review addDislike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         log.info("==>PUT /review  id {} userId {}", id, userId);
-        return reviewService.operationLike(id, userId, DISLIKE);
+        return reviewService.operationLike(id, userId, false);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
@@ -85,7 +85,8 @@ public class ReviewController {
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Review> getAll(@RequestParam(name = "filmId", required = false) Long filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
+    public Collection<Review> getAll(@RequestParam(name = "filmId", required = false) Long filmId,
+                                     @RequestParam(name = "count", defaultValue = "10") int count) {
         return reviewService.getAll(count, filmId);
     }
 }
