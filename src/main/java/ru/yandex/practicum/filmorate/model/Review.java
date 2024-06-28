@@ -21,12 +21,13 @@ public class Review {
     Long userId;
     @NotNull
     Long filmId;
-    int useful = 0;
+    int useful;
 
     public Review(String content, boolean b, long userId, long filmId) {
         this.content = content;
         this.isPositive = b;
         this.userId = userId;
         this.filmId = filmId;
+        this.useful = 0;
     }
 }

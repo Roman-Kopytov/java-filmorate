@@ -354,7 +354,8 @@ public class JdbcFilmRepository implements FilmRepository {
                 LEFT JOIN MPA on f.MPA_ID = MPA.MPA_ID
                 LEFT JOIN FILMS_GENRES on f.FILM_ID = FILMS_GENRES.FILM_ID
                 WHERE fl.USER_ID in (:arr)
-                AND fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id);
+                AND fl.FILM_ID not in (select ul.FILM_ID from LIKES ul where ul.USER_ID = :id)
+                GROUP BY f.film_id;
                 """;
         List<Film> filmList = jdbcOperations.query(sql,
                 Map.of("arr", arrUserIdString, "id", userId), new FilmRowMapper());

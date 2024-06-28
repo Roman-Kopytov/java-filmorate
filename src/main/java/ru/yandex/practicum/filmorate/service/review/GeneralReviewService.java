@@ -11,8 +11,6 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 @Service

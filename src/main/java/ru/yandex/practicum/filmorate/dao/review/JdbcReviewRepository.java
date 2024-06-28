@@ -8,10 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -68,30 +65,33 @@ public class JdbcReviewRepository implements ReviewRepository {
     }
 
     @Override
-    public List<Review> getAll(int count, Long filmId) {
-        List<Review> reviewList;
+    public LinkedList<Review> getAll(int count, Long filmId) {
+        LinkedList<Review> reviewList;
         if (filmId == null) {
-            reviewList = jdbcOperations.query(
+            reviewList = new LinkedList<>(jdbcOperations.query(
                     """
                             SELECT r.*, SUM(rl.USEFUL) AS USEFUL
-                            FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id
+                            FROM reviews r
+                            LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id
                             GROUP BY r.REVIEW_ID
                             ORDER BY USEFUL desc
                             LIMIT :count
                             """,
-                    Map.of("count", count), reviewRowMapper);
+                    Map.of("count", count), reviewRowMapper));
         } else {
-            reviewList = jdbcOperations.query(
+            reviewList = new LinkedList<>(jdbcOperations.query(
                     """
-                            SELECT r.*, SUM(rl.USEFUL) AS USEFUL
-                            FROM reviews r LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id 
-                            WHERE film_id = :filmId 
-                            GROUP BY r.REVIEW_ID
-                            ORDER BY USEFUL desc
-                            LIMIT :count
-                        """,
-                    Map.of("filmId", filmId, "count", count), reviewRowMapper);
+                                SELECT r.*, SUM(rl.USEFUL) AS USEFUL
+                                FROM reviews r
+                                LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id
+                                WHERE film_id = :filmId
+                                GROUP BY r.REVIEW_ID
+                                ORDER BY USEFUL desc
+                                LIMIT :count
+                            """,
+                    Map.of("filmId", filmId, "count", count), reviewRowMapper));
         }
+        reviewList.sort(Comparator.comparing(Review::getUseful).reversed());
         return reviewList;
     }
 

@@ -131,14 +131,14 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public List<Long> getRecommendation(long id) {
         String query = """
-                SELECT l2.USER_ID, count(l2.FILM_ID) rate
+                SELECT l2.USER_ID
                 FROM likes l1
                 LEFT JOIN likes l2 ON (l1.film_id=l2.FILM_ID AND l1.user_id!=l2.USER_ID)
                 LEFT JOIN users u ON (l2.USER_ID!=l1.user_id)
                 WHERE l1.user_id = :id
                 GROUP BY L2.user_id
-                HAVING  rate > 1
-                ORDER BY rate DESC
+                HAVING  count(l2.FILM_ID) > 1
+                ORDER BY count(l2.FILM_ID) DESC
                 LIMIT 10
                 """;
 
