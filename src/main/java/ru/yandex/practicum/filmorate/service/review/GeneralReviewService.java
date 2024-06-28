@@ -29,10 +29,10 @@ public class GeneralReviewService implements ReviewService {
     }
 
     @Override
-    public Review deleteLike(Long reviewId, Long userId) {
+    public Review deleteLike(Long reviewId, Long userId, boolean like) {
         validateReview(reviewId);
         validateUser(userId);
-        return reviewRepository.deleteLike(reviewId, userId);
+        return reviewRepository.deleteLike(reviewId, userId, like ? 1 : -1);
     }
 
 

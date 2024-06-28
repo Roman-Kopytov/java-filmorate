@@ -20,6 +20,6 @@ public interface ReviewService {
 
     Review operationLike(Long id, Long userId, boolean b);
 
-    Review deleteLike(Long id, Long userId);
+    Review deleteLike(Long id, Long userId, boolean b);
 
 }

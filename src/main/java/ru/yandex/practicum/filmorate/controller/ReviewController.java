@@ -59,14 +59,14 @@ public class ReviewController {
     @ResponseStatus(HttpStatus.OK)
     public Review deleteDislike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         log.info("==>DELETE /review  id {} userId {}", id, userId);
-        return reviewService.deleteLike(id, userId);
+        return reviewService.deleteLike(id, userId,true);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review deleteLike(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         log.info("==>DELETE /review  id {} userId {}", id, userId);
-        return reviewService.deleteLike(id, userId);
+        return reviewService.deleteLike(id, userId,false);
     }
 
     @DeleteMapping("/{id}")

@@ -8,7 +8,10 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -56,9 +59,8 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Optional<Review> getById(Long reviewId) {
-        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.*, SUM(rl.USEFUL) AS USEFUL " +
+        return Optional.ofNullable(jdbcOperations.queryForObject("SELECT r.* " +
                         "FROM reviews r " +
-                        "LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id " +
                         "WHERE r.review_id =:reviewId " +
                         "GROUP BY r.REVIEW_ID",
                 Map.of("reviewId", reviewId), reviewRowMapper));
@@ -70,9 +72,8 @@ public class JdbcReviewRepository implements ReviewRepository {
         if (filmId == null) {
             reviewList = new LinkedList<>(jdbcOperations.query(
                     """
-                            SELECT r.*, SUM(rl.USEFUL) AS USEFUL
+                            SELECT r.*
                             FROM reviews r
-                            LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id
                             GROUP BY r.REVIEW_ID
                             ORDER BY USEFUL desc
                             LIMIT :count
@@ -81,9 +82,8 @@ public class JdbcReviewRepository implements ReviewRepository {
         } else {
             reviewList = new LinkedList<>(jdbcOperations.query(
                     """
-                                SELECT r.*, SUM(rl.USEFUL) AS USEFUL
+                                SELECT r.*
                                 FROM reviews r
-                                LEFT JOIN reviews_likes rl ON r.review_id=rl.review_id
                                 WHERE film_id = :filmId
                                 GROUP BY r.REVIEW_ID
                                 ORDER BY USEFUL desc
@@ -91,7 +91,6 @@ public class JdbcReviewRepository implements ReviewRepository {
                             """,
                     Map.of("filmId", filmId, "count", count), reviewRowMapper));
         }
-        reviewList.sort(Comparator.comparing(Review::getUseful).reversed());
         return reviewList;
     }
 
@@ -99,23 +98,38 @@ public class JdbcReviewRepository implements ReviewRepository {
     public Review operationLike(Long id, Long userId, Integer useful) {
         Map<String, Object> map = Map.of(
                 "review_id", id,
-                "user_id", userId,
-                "useful", useful);
+                "user_id", userId
+        );
         MapSqlParameterSource params = new MapSqlParameterSource(map);
-        String sql = "MERGE INTO reviews_likes (review_id, user_id, useful)" +
-                " VALUES(:review_id,:user_id,:useful)";
+        String sql = "MERGE INTO reviews_likes (review_id, user_id)" +
+                " VALUES(:review_id,:user_id)";
         jdbcOperations.update(sql, params);
+
+        String s = "UPDATE reviews " +
+                "SET USEFUL=USEFUL+:useful " +
+                "WHERE review_id=:review_id";
+        jdbcOperations.update(s, Map.of("review_id", id,
+                "useful", useful));
         return getById(id).get();
     }
 
     @Override
-    public Review deleteLike(Long id, Long userId) {
+    public Review deleteLike(Long id, Long userId, Integer useful) {
         Map<String, Object> map = Map.of(
                 "review_id", id,
                 "user_id", userId);
         MapSqlParameterSource params = new MapSqlParameterSource(map);
         String sql = "DELETE FROM REVIEWS_LIKES WHERE user_id = :user_id AND review_id= :review_id";
         jdbcOperations.update(sql, params);
+
+        String s = "UPDATE reviews " +
+                "SET USEFUL=USEFUL-:useful " +
+                "WHERE review_id=:review_id";
+        jdbcOperations.update(s, Map.of("review_id", id,
+                "useful", useful));
         return getById(id).get();
     }
+
+
 }
+

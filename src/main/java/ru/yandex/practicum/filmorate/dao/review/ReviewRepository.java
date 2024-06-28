@@ -19,5 +19,5 @@ public interface ReviewRepository {
 
     Review operationLike(Long id, Long userId, Integer useful);
 
-    Review deleteLike(Long id, Long userId);
+    Review deleteLike(Long id, Long userId, Integer useful);
 }
