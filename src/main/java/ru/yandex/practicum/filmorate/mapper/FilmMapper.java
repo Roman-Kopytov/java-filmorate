@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FilmMapper {
-    public static FilmDto mapToUserDto(Film film) {
+    public static FilmDto mapToFilmDto(Film film) {
         FilmDto dto = new FilmDto();
         dto.setId(film.getId());
         dto.setName(film.getName());
@@ -16,7 +16,7 @@ public final class FilmMapper {
         dto.setDuration(film.getDuration());
         dto.setMpa(film.getMpa());
         dto.setGenres(film.getGenres());
-
+        dto.setDirectors(film.getDirectors());
         return dto;
     }
 }

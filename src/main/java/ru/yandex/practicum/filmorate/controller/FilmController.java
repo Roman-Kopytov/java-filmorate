@@ -7,9 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.pathHandler.SearchParameters;
 import ru.yandex.practicum.filmorate.dao.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker.Update;
+import ru.yandex.practicum.filmorate.model.SortedBy;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import java.util.List;
@@ -36,6 +38,13 @@ public class FilmController {
         return savedFilm;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable("id") long id) {
+        log.info("==>DELETE films/{}", id);
+        FilmDto deletedFilm = filmService.deleteFilmById(id);
+        log.info("DELETE /films/{} <== {}", id, deletedFilm);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated
@@ -55,10 +64,26 @@ public class FilmController {
         return updatedFilm;
     }
 
+    @GetMapping("/search")
+    @Validated
+    public List<FilmDto> searchBy(@RequestParam(name = "query") String query,
+                                  @RequestParam(name = "by", defaultValue = "director,title") String by) {
+        log.info("==>GET /search?query={}&by={}", query, by);
+        return filmService.searchBy(query, SearchParameters.by(by));
+    }
+
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
-        log.info("==>GET /popular?count={}", count);
-        return filmService.getPopularFilms(count);
+    public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count,
+                                         @RequestParam(name = "genreId", required = false) Long genreId,
+                                         @RequestParam(name = "year", required = false) Integer year) {
+        log.info("==>GET /popular/count={}&genreId={}&year={}", count, genreId, year);
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("director/{directorId}")
+    public List<FilmDto> getSortedFilmsByDirector(@PathVariable long directorId, @RequestParam SortedBy sortBy) {
+        log.info("==>GET //films/director/{directorId");
+        return filmService.getDirectorFilmsSortedBy(directorId, sortBy);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
@@ -73,5 +98,12 @@ public class FilmController {
         filmService.deleteLike(userId, filmId);
     }
 
-
+    @GetMapping("/common")
+    public List<FilmDto> getCommonsFilms(
+            @RequestParam(value = "userId") long userId,
+            @RequestParam(value = "friendId") long friendId
+    ) {
+        log.info("==>GET /films/common for userId: {} and friendId: {}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }
